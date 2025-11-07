@@ -1,12 +1,11 @@
-import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 
-export const AppRoutes: React.FC = () => {
+export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" />
-      
-      <Route path="*" />
+      <Route path="/profile"  />
+      <Route path="/settings" />
     </Routes>
   );
-};
+}
