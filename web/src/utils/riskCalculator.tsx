@@ -1,4 +1,4 @@
-import type{ Device, ErrorLog } from '../lib/supabase';
+import type{ Device, ErrorLog } from '../data/objects';
 
 export function calculateDeviceRisk(device: Device, errorLogs: ErrorLog[]) {
   let riskScore = 0;

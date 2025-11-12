@@ -26,9 +26,34 @@ export interface ErrorLog {
   error_type: string;
   severity: number;
   reported_at: string;
-  created_at: string;
 }
 
+export interface Device {
+  id: string;
+  facility_id: string;
+  name: string;
+  type: string;
+  model: string;
+  manufacturer: string;
+  manufacture_date: string;
+  installation_date: string;
+  last_maintenance: string;
+  status: 'operational' | 'maintenance' | 'critical' | 'stopped';
+  specifications: {
+    power_consumption?: string;
+    operating_temperature?: string;
+    pressure_range?: string;
+    capacity?: string;
+    voltage?: string;
+  };
+}
+
+export interface Facility {
+  id: string;
+  name: string;
+  location: string;
+  department: string;
+}
 export interface DeviceWithErrors extends Device {
   error_logs: ErrorLog[];
   risk_score: number;
