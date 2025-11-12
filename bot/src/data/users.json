@@ -10,5 +10,41 @@
     "firstName": "Орешек💖",
     "fio": "Капкович Арина Андреевна",
     "role": "manager"
+  },
+  {
+    "telegramId": 1258151845,
+    "firstName": "weedkiller",
+    "fio": "Галат Ксения Дмитриевна",
+    "role": "supervisor",
+    "workshop": 1
+  },
+  {
+    "telegramId": 6526202588,
+    "firstName": "Natasha",
+    "currentStep": "awaiting_fio"
+  },
+  {
+    "telegramId": 0,
+    "firstName": "",
+    "fio": "Петров Алекс Иванович",
+    "role": "inspector"
+  },
+  {
+    "telegramId": 1,
+    "firstName": "",
+    "fio": "Иванова Мария Игоревна",
+    "role": "inspector"
+  },
+  {
+    "telegramId": 2,
+    "firstName": "Artem",
+    "fio": "Краснова Ирина Анатольевна",
+    "role": "inspector"
+  },
+  {
+    "telegramId": 3,
+    "firstName": "",
+    "fio": "Белый Максим Сергеевич",
+    "role": "inspector"
   }
 ]

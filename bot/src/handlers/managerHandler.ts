@@ -14,38 +14,46 @@ import { bot } from '../index';
 export async function handleManagerFlow(ctx: Context) {
   const userId = ctx.from!.id;
   const user = getUser(userId);
-  
+
   if (!user || user.role !== 'manager') {
     await ctx.reply(MESSAGES.userNotFound);
     return;
   }
-  
-  const text = 'text' in ctx.message! ? ctx.message!.text : '';
-  
+
+  let input = '';
+  if (ctx.callbackQuery) {
+    input = (ctx.callbackQuery as any).data || '';
+    await ctx.answerCbQuery();
+  } else if ('text' in ctx.message!) {
+    input = ctx.message!.text;
+  } else {
+    return; // No input
+  }
+
   // Сгенерировать расписание
-  if (text === '📊 Сгенерировать расписание') {
+  if (input === '📊 Сгенерировать расписание') {
     await generateSchedule(ctx);
     return;
   }
-  
+
   // Показать текущее расписание
-  if (text === '📋 Текущее расписание') {
+  if (input === '📋 Текущее расписание') {
     await showCurrentSchedule(ctx);
     return;
   }
-  
+
   // Редактировать расписание
-  if (text === '✏️ Редактировать расписание') {
+  if (input === '✏️ Редактировать расписание') {
     await startScheduleEdit(ctx);
     return;
   }
-  
+
   // Утвердить расписание
-  if (text === '✅ Утвердить расписание') {
+  if (input === '✅ Утвердить расписание') {
     await approveSchedule(ctx);
     return;
   }
-  
+
   // Обработка редактирования расписания
   if (user.currentStep === 'editing_schedule') {
     await handleScheduleEdit(ctx);
@@ -109,9 +117,16 @@ async function startScheduleEdit(ctx: Context) {
 
 async function handleScheduleEdit(ctx: Context) {
   const userId = ctx.from!.id;
-  const text = 'text' in ctx.message! ? ctx.message!.text : '';
-  
-  if (text === '❌ Отменить редактирование') {
+  let input = '';
+  if (ctx.callbackQuery) {
+    input = (ctx.callbackQuery as any).data || '';
+  } else if ('text' in ctx.message!) {
+    input = ctx.message!.text;
+  } else {
+    return; // No input
+  }
+
+  if (input === '❌ Отменить редактирование') {
     updateUser(userId, { currentStep: undefined });
     await ctx.reply(
       MESSAGES.managerMenu,
@@ -122,9 +137,9 @@ async function handleScheduleEdit(ctx: Context) {
     );
     return;
   }
-  
+
   // Парсинг изменений
-  const lines = text.split('\n').filter(l => l.trim());
+  const lines = input.split('\n').filter(l => l.trim());
   const schedule = getSchedule();
   const inspectors = getAllInspectors();
   

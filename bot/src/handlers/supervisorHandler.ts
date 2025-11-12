@@ -6,32 +6,40 @@ import { bot } from '../index';
 export async function handleSupervisorFlow(ctx: Context) {
   const userId = ctx.from!.id;
   const user = getUser(userId);
-  
+
   if (!user || user.role !== 'supervisor') {
     await ctx.reply(MESSAGES.userNotFound);
     return;
   }
-  
-  const text = 'text' in ctx.message! ? ctx.message!.text : '';
-  
+
+  let input = '';
+  if (ctx.callbackQuery) {
+    input = (ctx.callbackQuery as any).data || '';
+    await ctx.answerCbQuery();
+  } else if ('text' in ctx.message!) {
+    input = ctx.message!.text;
+  } else {
+    return; // No input
+  }
+
   // Показать расписание
-  if (text === '📅 Мое расписание') {
+  if (input === '📅 Мое расписание') {
     await showSupervisorSchedule(ctx);
     return;
   }
-  
+
   // Запросы на согласование
-  if (text === '⏰ Запросы на согласование') {
+  if (input === '⏰ Запросы на согласование') {
     await ctx.reply('📋 Активные запросы отображаются автоматически при их поступлении');
     return;
   }
-  
+
   // Обработка callback кнопок
-  if ('callback_query' in ctx.update) {
+  if (ctx.callbackQuery) {
     await handleCallback(ctx);
     return;
   }
-  
+
   // Обработка ввода времени после отклонения
   if (user.currentStep === 'proposing_new_time') {
     await handleNewTimeProposal(ctx);
@@ -166,12 +174,19 @@ async function handleNewTimeProposal(ctx: Context) {
   await ctx.reply(MESSAGES.userNotFound);
   return;
 }
-  const text = 'text' in ctx.message! ? ctx.message!.text : '';
-  
+  let input = '';
+  if (ctx.callbackQuery) {
+    input = (ctx.callbackQuery as any).data || '';
+  } else if ('text' in ctx.message!) {
+    input = ctx.message!.text;
+  } else {
+    return; // No input
+  }
+
   // Проверка формата времени
   const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-  
-  if (!timeRegex.test(text)) {
+
+  if (!timeRegex.test(input)) {
     await ctx.reply(MESSAGES.invalidTime);
     return;
   }
@@ -187,17 +202,17 @@ async function handleNewTimeProposal(ctx: Context) {
   try {
     await bot.telegram.sendMessage(
       inspectorId,
-      `⏰ Руководитель цеха ${user.workshop} (${user.fio}) предлагает новое время: ${text}`,
+      `⏰ Руководитель цеха ${user.workshop} (${user.fio}) предлагает новое время: ${input}`,
       Markup.inlineKeyboard([
         [
-          Markup.button.callback('✅ Согласен', `confirm_time_${userId}_${text}`),
-          Markup.button.callback('❌ Не подходит', `reject_time_${userId}_${text}`)
+          Markup.button.callback('✅ Согласен', `confirm_time_${inspectorId}_${input}`),
+          Markup.button.callback('❌ Не подходит', `reject_time_${inspectorId}_${input}`)
         ]
       ])
     );
-    
+
     await ctx.reply(
-      MESSAGES.newTimeProposed(text, user.fio || user.firstName),
+      MESSAGES.newTimeProposed(input, user.fio || user.firstName),
       Markup.keyboard([
         ['📅 Мое расписание', '⏰ Запросы на согласование']
       ]).resize()

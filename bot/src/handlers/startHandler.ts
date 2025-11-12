@@ -79,25 +79,33 @@ async function showMainMenu(ctx: Context, user: any) {
 export async function handleRegistration(ctx: Context) {
   const userId = ctx.from!.id;
   const user = getUser(userId);
-  
+
   if (!user) {
     await handleStart(ctx);
     return;
   }
-  
-  const text = 'text' in ctx.message! ? ctx.message!.text : '';
-  
+
+  let input = '';
+  if (ctx.callbackQuery) {
+    input = (ctx.callbackQuery as any).data || '';
+    await ctx.answerCbQuery();
+  } else if ('text' in ctx.message!) {
+    input = ctx.message!.text;
+  } else {
+    return; // No input
+  }
+
   // Начало регистрации
-  if (text === '🚀 Начать регистрацию') {
+  if (input === '🚀 Начать регистрацию') {
     updateUser(userId, { currentStep: 'awaiting_fio' });
     await ctx.reply(MESSAGES.enterFio, Markup.removeKeyboard());
     return;
   }
-  
+
   // Ввод ФИО
   if (user.currentStep === 'awaiting_fio') {
-    updateUser(userId, { 
-      fio: text,
+    updateUser(userId, {
+      fio: input,
       currentStep: 'awaiting_role'
     });
     
@@ -115,17 +123,18 @@ export async function handleRegistration(ctx: Context) {
   // Выбор роли
   if (user.currentStep === 'awaiting_role') {
     let role: 'inspector' | 'manager' | 'supervisor' | undefined;
-    
-    if (text === '👷 Проверяющий') {
+
+    const lowerInput = input.toLowerCase();
+    if (input === '👷 Проверяющий' || lowerInput.includes('проверяющий')) {
       role = 'inspector';
-    } else if (text === '👔 Менеджер') {
+    } else if (input === '👔 Менеджер' || lowerInput.includes('менеджер')) {
       role = 'manager';
-    } else if (text === '🏭 Руководитель цеха') {
+    } else if (input === '🏭 Руководитель цеха' || lowerInput.includes('руководитель')) {
       role = 'supervisor';
     }
-    
+
     if (!role) {
-      await ctx.reply('❌ Выберите роль из предложенных вариантов');
+      await ctx.reply('❌ Выберите роль из предложенных вариантов или введите название роли');
       return;
     }
     
@@ -163,13 +172,18 @@ export async function handleRegistration(ctx: Context) {
   
   // Выбор цеха для руководителя
   if (user.currentStep === 'awaiting_workshop') {
-    const workshopMatch = text.match(/Цех (\d+)/);
+    const trimmedInput = input.trim();
+    const workshopMatch = trimmedInput.match(/(?:Цех\s*)?(\d+)/);
     if (!workshopMatch) {
-      await ctx.reply('❌ Выберите цех из предложенных вариантов');
+      await ctx.reply('❌ Выберите цех из предложенных вариантов или введите номер цеха (1-5)');
       return;
     }
-    
+
     const workshop = parseInt(workshopMatch[1]);
+    if (workshop < 1 || workshop > 5) {
+      await ctx.reply('❌ Номер цеха должен быть от 1 до 5');
+      return;
+    }
     
     updateUser(userId, { 
       workshop,
