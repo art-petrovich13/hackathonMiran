@@ -1,0 +1,907 @@
+{
+  "week": [
+    {
+      "date": "10.11.2025",
+      "day": "Понедельник",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "11.11.2025",
+      "day": "Вторник",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "12.11.2025",
+      "day": "Среда",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "13.11.2025",
+      "day": "Четверг",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "14.11.2025",
+      "day": "Пятница",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    }
+  ],
+  "month": [
+    {
+      "date": "10.11.2025",
+      "day": "Понедельник",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "11.11.2025",
+      "day": "Вторник",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "12.11.2025",
+      "day": "Среда",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "13.11.2025",
+      "day": "Четверг",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "14.11.2025",
+      "day": "Пятница",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "17.11.2025",
+      "day": "Понедельник",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "18.11.2025",
+      "day": "Вторник",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "19.11.2025",
+      "day": "Среда",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "20.11.2025",
+      "day": "Четверг",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "21.11.2025",
+      "day": "Пятница",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "24.11.2025",
+      "day": "Понедельник",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "25.11.2025",
+      "day": "Вторник",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "26.11.2025",
+      "day": "Среда",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "27.11.2025",
+      "day": "Четверг",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "28.11.2025",
+      "day": "Пятница",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "01.12.2025",
+      "day": "Понедельник",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "02.12.2025",
+      "day": "Вторник",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "03.12.2025",
+      "day": "Среда",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "04.12.2025",
+      "day": "Четверг",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "date": "05.12.2025",
+      "day": "Пятница",
+      "assignments": [
+        {
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        }
+      ]
+    }
+  ],
+  "currentWeekApproved": true
+}

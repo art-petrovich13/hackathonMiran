@@ -1,9 +1,14 @@
-import { Telegraf, Markup } from 'telegraf';
+import { Telegraf } from 'telegraf';
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
 import multer from 'multer';
+import { handleStart, handleRegistration } from './handlers/startHandler';
+import { handleInspectorFlow } from './handlers/inspectorHandler';
+import { handleManagerFlow } from './handlers/managerHandler';
+import { handleSupervisorFlow } from './handlers/supervisorHandler';
+import { loadUsers, getUser } from './utils/database';
 
 dotenv.config();
 
@@ -22,75 +27,66 @@ const app = express();
 // Middleware
 app.use(express.json());
 
+// Загрузка пользователей при старте
+loadUsers();
+
 // Настройка multer для загрузки файлов
 const upload = multer({ 
   dest: 'uploads/',
   limits: { fileSize: 10 * 1024 * 1024 } 
 });
 
-// --- Хранилище пользователей ---
-const users = new Map();
-
-// --- /start ---
+// --- Команда /start ---
 bot.start(async (ctx) => {
-  const userId = ctx.from.id;
-  const userName = ctx.from.first_name || 'Коллега';
+  await handleStart(ctx);
+});
 
-  if (!users.has(userId)) {
-    users.set(userId, {
-      step: 'start',
-      rating: 85,
-      rank: 'Специалист 2-го разряда',
-      photos: []
-    });
+// --- Обработка callback кнопок ---
+bot.on('callback_query', async (ctx) => {
+  const userId = ctx.from.id;
+  const user = getUser(userId);
+
+  if (!user || !user.role) {
+    // Обработка регистрации
+    await handleRegistration(ctx);
+    return;
   }
 
-  await ctx.reply(
-    `👋 Добро пожаловать, ${userName}!\n` +
-    `⭐ Рейтинг: ${users.get(userId).rating}/100\n` +
-    `🎖️ Звание: ${users.get(userId).rank}\n\n` +
-    `Для начала смены напишите "Старт смены"`
-  );
+  // Маршрутизация по ролям
+  switch (user.role) {
+    case 'inspector':
+      await handleInspectorFlow(ctx);
+      break;
+    case 'manager':
+      await handleManagerFlow(ctx);
+      break;
+    case 'supervisor':
+      await handleSupervisorFlow(ctx);
+      break;
+  }
 });
 
-// --- Обработка текста ---
-bot.hears('Старт смены', async (ctx) => {
-  const userId = ctx.from.id;
-  users.set(userId, { 
-    ...users.get(userId), 
-    step: 'awaiting_fio',
-    photos: [] 
-  });
-  await ctx.reply('🏭 Отлично! Введите ваше ФИО:');
-});
-
+// --- Обработка текстовых сообщений ---
 bot.on('text', async (ctx) => {
   const userId = ctx.from.id;
-  const user = users.get(userId);
-  if (!user) return;
+  const user = getUser(userId);
 
-  const text = ctx.message.text;
+  if (!user || !user.role) {
+    await handleRegistration(ctx);
+    return;
+  }
 
-  switch (user.step) {
-    case 'awaiting_fio':
-      users.set(userId, { ...user, fio: text, step: 'awaiting_workshop' });
-      await ctx.reply('✅ ФИО принято! Теперь введите номер цеха:');
+  // Маршрутизация по ролям
+  switch (user.role) {
+    case 'inspector':
+      await handleInspectorFlow(ctx);
       break;
-    case 'awaiting_workshop':
-      users.set(userId, { ...user, workshop: text, step: 'awaiting_equipment' });
-      await ctx.reply('✅ Цех записан. Укажите оборудование:');
+    case 'manager':
+      await handleManagerFlow(ctx);
       break;
-    case 'awaiting_equipment':
-      users.set(userId, { ...user, equipment: text, step: 'awaiting_photos' });
-      await ctx.reply(
-        `✅ Оборудование "${text}" записано.\n📸 Сделайте фото приборов через приложение:`,
-        Markup.inlineKeyboard([
-          Markup.button.webApp('📸 Сделать фото приборов', `https://solid-sandra-automated-wan.trycloudflare.com`)
-        ])
-      );
+    case 'supervisor':
+      await handleSupervisorFlow(ctx);
       break;
-    default:
-      await ctx.reply('Напишите "Старт смены" для начала работы');
   }
 });
 
@@ -132,17 +128,12 @@ app.post('/upload', upload.array('photos', 10), async (req, res) => {
       );
 
       fs.unlinkSync(filePath);
-      
-      // Здесь можно добавить анализ через OpenAI
-      // const analysis = await analyzePhoto(filePath);
-      // await bot.telegram.sendMessage(chatId, `🔍 Анализ: ${analysis}`);
     }
 
-    
     await bot.telegram.sendMessage(
       chatId,
       '✅ Все фото получены и проанализированы!\n\n' +
-      '💡 Можете начать новую смену командой "Старт смены"'
+      '💡 Можете начать новую смену командой /start'
     );
 
     console.log('✅ Все фото отправлены успешно');
@@ -162,3 +153,5 @@ app.listen(PORT, async () => {
   await bot.telegram.setWebhook(`${PUBLIC_URL}/bot`);
   console.log(`✅ Webhook установлен на: ${PUBLIC_URL}/bot`);
 });
+
+export { bot };
