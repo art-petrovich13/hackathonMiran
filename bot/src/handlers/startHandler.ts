@@ -49,7 +49,7 @@ async function showMainMenu(ctx: Context, user: any) {
       await ctx.reply(
         MESSAGES.inspectorMenu,
         Markup.keyboard([
-          ['📅 Расписание на неделю', '📅 Расписание на месяц'],
+          ['📅 Расписание на неделю', '📅 Расписание на 2 недели'],
           ['⏰ Согласовать время', '📸 Начать проверку']
         ]).resize()
       );
@@ -59,8 +59,8 @@ async function showMainMenu(ctx: Context, user: any) {
       await ctx.reply(
         MESSAGES.managerMenu,
         Markup.keyboard([
-          ['📊 Сгенерировать расписание', '📋 Текущее расписание'],
-          ['✏️ Редактировать расписание', '✅ Утвердить расписание']
+          ['📅 Расписание', '👥 Сотрудники'],
+          ['📊 Отчеты']
         ]).resize()
       );
       break;
@@ -69,7 +69,8 @@ async function showMainMenu(ctx: Context, user: any) {
       await ctx.reply(
         MESSAGES.supervisorMenu,
         Markup.keyboard([
-          ['📅 Мое расписание', '⏰ Запросы на согласование']
+          ['📅 Мое расписание', '⏰ Запросы на согласование'],
+          ['🔧 Запрос о поломке', '⚠️ Недочеты']
         ]).resize()
       );
       break;
@@ -148,7 +149,7 @@ export async function handleRegistration(ctx: Context) {
       await ctx.reply(
         MESSAGES.selectWorkshop,
         Markup.keyboard(
-          WORKSHOPS.map(w => [`🏭 Цех ${w}`])
+          WORKSHOPS.map((w, i) => [`🏭 ${w}`])
         ).resize()
       );
       return;
@@ -173,17 +174,13 @@ export async function handleRegistration(ctx: Context) {
   // Выбор цеха для руководителя
   if (user.currentStep === 'awaiting_workshop') {
     const trimmedInput = input.trim();
-    const workshopMatch = trimmedInput.match(/(?:Цех\s*)?(\d+)/);
-    if (!workshopMatch) {
-      await ctx.reply('❌ Выберите цех из предложенных вариантов или введите номер цеха (1-5)');
+    const workshopIndex = WORKSHOPS.findIndex(w => trimmedInput.includes(w));
+    if (workshopIndex === -1) {
+      await ctx.reply('❌ Выберите отделение из предложенных вариантов');
       return;
     }
 
-    const workshop = parseInt(workshopMatch[1]);
-    if (workshop < 1 || workshop > 5) {
-      await ctx.reply('❌ Номер цеха должен быть от 1 до 5');
-      return;
-    }
+    const workshop = workshopIndex + 1;
     
     updateUser(userId, { 
       workshop,

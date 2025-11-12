@@ -1,6 +1,6 @@
 import { Context, Markup } from 'telegraf';
 import { getUser, updateUser, getSchedule } from '../utils/database';
-import { MESSAGES } from '../config/messages';
+import { MESSAGES, getWorkshopName } from '../config/messages';
 import { bot } from '../index';
 
 export async function handleSupervisorFlow(ctx: Context) {
@@ -34,6 +34,18 @@ export async function handleSupervisorFlow(ctx: Context) {
     return;
   }
 
+  // Запрос о поломке
+  if (input === '🔧 Запрос о поломке') {
+    await ctx.reply('🔧 Запрос о поломке пока в разработке');
+    return;
+  }
+
+  // Недочеты
+  if (input === '⚠️ Недочеты') {
+    await ctx.reply('⚠️ Недочеты пока в разработке');
+    return;
+  }
+
   // Обработка callback кнопок
   if (ctx.callbackQuery) {
     await handleCallback(ctx);
@@ -61,7 +73,7 @@ async function showSupervisorSchedule(ctx: Context) {
     return;
   }
   
-  let message = `📅 *Расписание проверок для цеха ${user.workshop}:*\n\n`;
+  let message = `📅 *Расписание проверок для ${getWorkshopName(user.workshop!)}:*\n\n`;
   let hasAssignments = false;
   
   schedule.week.forEach(day => {
@@ -85,7 +97,7 @@ async function showSupervisorSchedule(ctx: Context) {
   });
   
   if (!hasAssignments) {
-    await ctx.reply(`❌ Проверок для цеха ${user.workshop} не запланировано`);
+    await ctx.reply(`❌ Проверок для ${getWorkshopName(user.workshop!)} не запланировано`);
     return;
   }
   
@@ -202,7 +214,7 @@ async function handleNewTimeProposal(ctx: Context) {
   try {
     await bot.telegram.sendMessage(
       inspectorId,
-      `⏰ Руководитель цеха ${user.workshop} (${user.fio}) предлагает новое время: ${input}`,
+      `⏰ Руководитель ${getWorkshopName(user.workshop!)} (${user.fio}) предлагает новое время: ${input}`,
       Markup.inlineKeyboard([
         [
           Markup.button.callback('✅ Согласен', `confirm_time_${inspectorId}_${input}`),

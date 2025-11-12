@@ -1,6 +1,6 @@
 import { Context, Markup } from 'telegraf';
 import { getUser, updateUser, getSchedule, updateSchedule, getSupervisorByWorkshop } from '../utils/database';
-import { MESSAGES } from '../config/messages';
+import { MESSAGES, getWorkshopName } from '../config/messages';
 import { bot } from '../index';
 
 export async function handleInspectorFlow(ctx: Context) {
@@ -28,11 +28,6 @@ export async function handleInspectorFlow(ctx: Context) {
     return;
   }
 
-  // Показать расписание на месяц
-  if (input === '📅 Расписание на месяц') {
-    await showSchedule(ctx, 'month');
-    return;
-  }
 
   // Согласовать время
   if (input === '⏰ Согласовать время') {
@@ -51,6 +46,12 @@ export async function handleInspectorFlow(ctx: Context) {
         )
       ])
     );
+    return;
+  }
+
+  // Обработка выбора дня
+  if (user.currentStep === 'selecting_day') {
+    await handleDaySelection(ctx);
     return;
   }
 
@@ -80,9 +81,9 @@ async function showSchedule(ctx: Context, period: 'week' | 'month') {
   }
   
   // Фильтруем только задания для этого проверяющего
-  let message = period === 'week' ? 
-    '📅 *Ваше расписание на неделю:*\n\n' : 
-    '📅 *Ваше расписание на месяц:*\n\n';
+  let message = period === 'week' ?
+    '📅 *Ваше расписание на неделю:*\n\n' :
+    '📅 *Ваше расписание на 2 недели:*\n\n';
   
   scheduleData.forEach(day => {
     const myAssignments = day.assignments.filter(a => a.inspectorId === userId);
@@ -94,7 +95,7 @@ async function showSchedule(ctx: Context, period: 'week' | 'month') {
         const status = assignment.status === 'confirmed' ? '✅' : 
                       assignment.status === 'rejected' ? '❌' : '⏳';
         const time = assignment.confirmedTime ? ` в ${assignment.confirmedTime}` : '';
-        message += `   🏭 Цех ${assignment.workshop}${time} ${status}\n`;
+        message += `   🏭 ${getWorkshopName(assignment.workshop)}${time} ${status}\n`;
       });
       
       message += '\n';
@@ -107,39 +108,94 @@ async function showSchedule(ctx: Context, period: 'week' | 'month') {
 async function startTimeCoordination(ctx: Context) {
   const userId = ctx.from!.id;
   const schedule = getSchedule();
-  
-  // Находим сегодняшнее задание
-  const today = new Date().toLocaleDateString('ru-RU');
-  const todaySchedule = schedule.week.find(day => day.date === today);
-  
-  if (!todaySchedule) {
-    await ctx.reply('❌ На сегодня нет заданий в расписании');
+
+  // Находим дни с заданиями для проверяющего в ближайшей неделе
+  const availableDays = schedule.week.filter(day => {
+    const dayDate = new Date(day.date.split('.').reverse().join('-'));
+    const today = new Date();
+    const diffTime = dayDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays >= 0 && diffDays <= 7 && day.assignments.some(a => a.inspectorId === userId);
+  });
+
+  if (availableDays.length === 0) {
+    await ctx.reply('❌ В ближайшей неделе нет заданий для согласования времени');
     return;
   }
-  
-  const myAssignment = todaySchedule.assignments.find(a => a.inspectorId === userId);
-  
-  if (!myAssignment) {
-    await ctx.reply('❌ На сегодня у вас нет назначенных проверок');
+
+  updateUser(userId, { currentStep: 'selecting_day' });
+
+  let message = '📅 Выберите день для согласования времени:\n\n';
+  const keyboard = [];
+
+  availableDays.forEach((day, index) => {
+    const myAssignment = day.assignments.find(a => a.inspectorId === userId);
+    if (myAssignment) {
+      message += `${index + 1}. ${day.day}, ${day.date} - ${getWorkshopName(myAssignment.workshop)}\n`;
+      keyboard.push([`${index + 1}`]);
+    }
+  });
+
+  keyboard.push(['❌ Отменить']);
+
+  await ctx.reply(message, Markup.keyboard(keyboard).resize());
+}
+
+async function handleDaySelection(ctx: Context) {
+  const userId = ctx.from!.id;
+  const user = getUser(userId);
+  let input = '';
+  if ('text' in ctx.message!) {
+    input = ctx.message!.text;
+  } else {
     return;
   }
-  
+
+  if (input === '❌ Отменить') {
+    updateUser(userId, { currentStep: undefined });
+    await ctx.reply(
+      '❌ Согласование времени отменено',
+      Markup.keyboard([
+        ['📅 Расписание на неделю', '📅 Расписание на 2 недели'],
+        ['⏰ Согласовать время', '📸 Начать проверку']
+      ]).resize()
+    );
+    return;
+  }
+
+  const num = parseInt(input);
+  if (isNaN(num)) return;
+
+  const schedule = getSchedule();
+  const availableDays = schedule.week.filter(day => {
+    const dayDate = new Date(day.date.split('.').reverse().join('-'));
+    const today = new Date();
+    const diffTime = dayDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays >= 0 && diffDays <= 7 && day.assignments.some(a => a.inspectorId === userId);
+  });
+
+  const selectedDay = availableDays[num - 1];
+  if (!selectedDay) return;
+
+  const myAssignment = selectedDay.assignments.find(a => a.inspectorId === userId);
+  if (!myAssignment) return;
+
   const supervisor = getSupervisorByWorkshop(myAssignment.workshop);
-  
   if (!supervisor) {
-    await ctx.reply(`❌ Руководитель цеха ${myAssignment.workshop} не найден`);
+    await ctx.reply(`❌ Руководитель ${getWorkshopName(myAssignment.workshop)} не найден`);
     return;
   }
-  
-  updateUser(userId, { 
+
+  updateUser(userId, {
     currentStep: 'awaiting_time',
     tempData: {
       workshop: myAssignment.workshop,
       supervisorId: supervisor.telegramId,
-      date: today
+      date: selectedDay.date
     }
   });
-  
+
   await ctx.reply(
     MESSAGES.enterTime(myAssignment.workshop, supervisor.fio || supervisor.firstName),
     Markup.removeKeyboard()
@@ -188,7 +244,7 @@ async function handleTimeInput(ctx: Context) {
     await ctx.reply(
       MESSAGES.timeProposed(input),
       Markup.keyboard([
-        ['📅 Расписание на неделю', '📅 Расписание на месяц'],
+        ['📅 Расписание на неделю', '📅 Расписание на 2 недели'],
         ['⏰ Согласовать время', '📸 Начать проверку']
       ]).resize()
     );

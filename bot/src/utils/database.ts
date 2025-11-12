@@ -104,6 +104,10 @@ export function getAllManagers(): User[] {
   return Array.from(users.values()).filter(u => u.role === 'manager');
 }
 
+export function getAllSupervisors(): User[] {
+  return Array.from(users.values()).filter(u => u.role === 'supervisor');
+}
+
 export function getSupervisorByWorkshop(workshop: number): User | undefined {
   return Array.from(users.values()).find(
     u => u.role === 'supervisor' && u.workshop === workshop
@@ -146,59 +150,70 @@ export function generateWeekSchedule(): ScheduleDay[] {
   const inspectors = getAllInspectors();
   const workshops = [1, 2, 3, 4, 5];
   const days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница'];
-  
+
   const weekSchedule: ScheduleDay[] = [];
   const today = new Date();
-  
+
   // Получаем понедельник текущей недели
   const monday = new Date(today);
   monday.setDate(today.getDate() - today.getDay() + 1);
-  
-  for (let i = 0; i < 5; i++) {
+
+  // Track last workshop for each inspector to avoid consecutive same workshop
+  const lastWorkshop: { [inspectorId: number]: number } = {};
+
+  for (let i = 0; i < 10; i++) { // 2 weeks = 10 days
     const currentDay = new Date(monday);
     currentDay.setDate(monday.getDate() + i);
-    
-    // Перемешиваем инспекторов для разнообразия
+
+    // Shuffle workshops
+    const shuffledWorkshops = [...workshops].sort(() => Math.random() - 0.5);
+
+    // Shuffle inspectors
     const shuffledInspectors = [...inspectors].sort(() => Math.random() - 0.5);
-    
-    const assignments = workshops.map((workshop, idx) => {
-      const inspector = shuffledInspectors[idx % shuffledInspectors.length];
-      return {
+
+    const assignments = [];
+    const usedInspectors = new Set<number>();
+
+    for (const workshop of shuffledWorkshops) {
+      // Find inspector who didn't check this workshop yesterday and not used today
+      let inspector = shuffledInspectors.find(ins =>
+        lastWorkshop[ins.telegramId] !== workshop && !usedInspectors.has(ins.telegramId)
+      );
+
+      if (!inspector) {
+        // If no perfect match, find any unused inspector
+        inspector = shuffledInspectors.find(ins => !usedInspectors.has(ins.telegramId));
+      }
+
+      if (!inspector) {
+        // If still no, skip this workshop (shouldn't happen with equal numbers)
+        continue;
+      }
+
+      usedInspectors.add(inspector.telegramId);
+      lastWorkshop[inspector.telegramId] = workshop;
+
+      assignments.push({
         workshop,
         inspector: inspector.fio || inspector.firstName,
         inspectorId: inspector.telegramId,
         status: 'pending' as const
-      };
-    });
-    
+      });
+    }
+
     weekSchedule.push({
       date: currentDay.toLocaleDateString('ru-RU'),
-      day: days[i],
+      day: days[i % 5],
       assignments
     });
   }
-  
+
   return weekSchedule;
 }
 
 export function generateMonthSchedule(): ScheduleDay[] {
-  // Упрощенная версия - 4 недели
-  const weekSchedule = generateWeekSchedule();
-  const monthSchedule: ScheduleDay[] = [];
-  
-  for (let week = 0; week < 4; week++) {
-    weekSchedule.forEach(day => {
-      const date = new Date(day.date.split('.').reverse().join('-'));
-      date.setDate(date.getDate() + (week * 7));
-      
-      monthSchedule.push({
-        ...day,
-        date: date.toLocaleDateString('ru-RU')
-      });
-    });
-  }
-  
-  return monthSchedule;
+  // Now returns the same 2 weeks schedule
+  return generateWeekSchedule();
 }
 
 // Инициализация при загрузке модуля

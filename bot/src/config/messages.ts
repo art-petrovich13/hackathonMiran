@@ -13,7 +13,7 @@ export const MESSAGES = {
   
   selectRole: '👔 Выберите вашу должность:',
   
-  selectWorkshop: '🏭 Выберите номер цеха, которым вы руководите:',
+  selectWorkshop: '🏭 Выберите отделение, которым вы руководите:',
   
   registrationComplete: (fio: string, role: string) =>
     `✅ Регистрация завершена!\n\n` +
@@ -25,10 +25,10 @@ export const MESSAGES = {
   
   scheduleWeek: '📅 Расписание на неделю:',
   
-  scheduleMonth: '📅 Расписание на месяц:',
+  scheduleMonth: '📅 Расписание на 2 недели:',
   
   enterTime: (workshop: number, supervisorName: string) =>
-    `⏰ Введите время проверки для цеха ${workshop}\n` +
+    `⏰ Введите время проверки для ${getWorkshopName(workshop)}\n` +
     `Руководитель: ${supervisorName}\n\n` +
     `Формат: ЧЧ:ММ (например, 14:30)`,
   
@@ -88,4 +88,16 @@ function getRoleName(role: string): string {
   return ROLES[role as keyof typeof ROLES] || role;
 }
 
-export const WORKSHOPS = [1, 2, 3, 4, 5];
+export function getWorkshopName(workshopNumber: number): string {
+  return WORKSHOPS[workshopNumber - 1] || `Цех ${workshopNumber}`;
+}
+
+export const WORKSHOPS = [
+  'Отделение раздува',
+  'Отделение литья',
+  'Дробильное отделение',
+  'Помещение централизованной подачи материала',
+  'Сборочный участок'
+];
+
+export const WORKSHOP_NUMBERS = [1, 2, 3, 4, 5];

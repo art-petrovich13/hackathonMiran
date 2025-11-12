@@ -3,7 +3,8 @@
     "telegramId": 1024422309,
     "firstName": "Artem",
     "fio": "Петрович Артем Сергеевич",
-    "role": "inspector"
+    "role": "supervisor",
+    "workshop": 1
   },
   {
     "telegramId": 1024252830,
@@ -15,8 +16,13 @@
     "telegramId": 1258151845,
     "firstName": "weedkiller",
     "fio": "Галат Ксения Дмитриевна",
-    "role": "supervisor",
-    "workshop": 1
+    "role": "inspector",
+    "currentStep": "awaiting_time",
+    "tempData": {
+      "workshop": 2,
+      "supervisorId": 11,
+      "date": "14.11.2025"
+    }
   },
   {
     "telegramId": 6526202588,
@@ -37,7 +43,7 @@
   },
   {
     "telegramId": 2,
-    "firstName": "Artem",
+    "firstName": "",
     "fio": "Краснова Ирина Анатольевна",
     "role": "inspector"
   },
@@ -46,5 +52,51 @@
     "firstName": "",
     "fio": "Белый Максим Сергеевич",
     "role": "inspector"
+  },
+  {
+    "telegramId": 6,
+    "firstName": "",
+    "fio": "Черный Егор Сергеевич",
+    "role": "inspector"
+  },
+  {
+    "telegramId": 7,
+    "firstName": "",
+    "fio": "Белова Екатерина Сергеевна",
+    "role": "inspector"
+  },
+  {
+    "telegramId": 10,
+    "firstName": "",
+    "fio": "Иванов Петр Александрович",
+    "role": "supervisor",
+    "workshop": 1
+  },
+  {
+    "telegramId": 11,
+    "firstName": "",
+    "fio": "Сидорова Анна Викторовна",
+    "role": "supervisor",
+    "workshop": 2
+  },
+  {
+    "telegramId": 12,
+    "firstName": "",
+    "fio": "Кузнецов Дмитрий Сергеевич",
+    "role": "supervisor",
+    "workshop": 3
+  },
+  {
+    "telegramId": 13,
+    "firstName": "",
+    "fio": "Морозова Елена Игоревна",
+    "role": "supervisor",
+    "workshop": 4
+  },
+  {
+    "telegramId": 14,
+    "firstName": "",
+    "fio": "Волков Олег Михайлович",
+    "workshop": 5
   }
 ]
