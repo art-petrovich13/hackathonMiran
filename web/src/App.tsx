@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Camera, Send } from 'lucide-react';
 import styles from './App.module.css';
 
+import Breakdowns from './pages/Breakdowns/Breakdowns';
+
 interface DevicePhoto {
   deviceId: number;
   photoUrl: string | null;
@@ -189,95 +191,7 @@ function App() {
   }, [tg, photos, isSending, allPhotosTaken, userId]);
 
   return (
-    <div className={styles.container}>
-      <div className={styles.content}>
-        <h1 className={styles.title}>📸 Фото приборов</h1>
-
-        {/* Отладочная информация */}
-        {!userId && (
-          <div style={{ 
-            padding: '10px', 
-            background: '#fff3cd', 
-            border: '1px solid #ffc107',
-            borderRadius: '8px',
-            marginBottom: '15px'
-          }}>
-            ⚠️ Откройте приложение из Telegram бота
-          </div>
-        )}
-
-        <div className={styles.photoCounter}>
-          <p>Сделано фото: {takenPhotosCount} из {photos.length}</p>
-          {allPhotosTaken && (
-            <p className={styles.readyText}>✅ Все фото готовы к отправке!</p>
-          )}
-        </div>
-
-        {photos.map((device) => (
-          <div key={device.deviceId} className={styles.deviceBlock}>
-            <div className={styles.deviceContent}>
-              <h2 className={styles.deviceTitle}>Прибор {device.deviceId}</h2>
-
-              <label htmlFor={`camera-input-${device.deviceId}`} className={styles.photoLabel}>
-                <div className={styles.photoUploadArea}>
-                  {device.photoUrl ? (
-                    <div className={styles.photoPreviewContainer}>
-                      <img
-                        src={device.photoUrl}
-                        alt={`Прибор ${device.deviceId}`}
-                        className={styles.photoImage}
-                      />
-                      <div className={styles.photoOverlay}>
-                        <Camera className={styles.overlayIcon} size={32} />
-                        <span>Изменить фото</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className={styles.emptyState}>
-                      <Camera size={48} className={styles.emptyIcon} />
-                      <p className={styles.emptyText}>Нажмите для фото</p>
-                    </div>
-                  )}
-                </div>
-                <input
-                  id={`camera-input-${device.deviceId}`}
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  className={styles.fileInput}
-                  onChange={(e) => handleCameraCapture(device.deviceId, e)}
-                />
-              </label>
-            </div>
-          </div>
-        ))}
-
-        {/* Запасная кнопка (если MainButton не работает) */}
-        <button 
-          className={`${styles.submitButton} ${!allPhotosTaken || isSending ? styles.submitButtonDisabled : ''}`}
-          onClick={handleSubmit}
-          disabled={!allPhotosTaken || isSending}
-        >
-          {isSending ? (
-            <>
-              <div className={styles.loadingSpinner}></div>
-              Отправка...
-            </>
-          ) : (
-            <>
-              <Send size={20} />
-              📤 Отправить на анализ
-            </>
-          )}
-        </button>
-
-        {!allPhotosTaken && (
-          <p className={styles.helperText}>
-            Сделайте все 3 фото для отправки
-          </p>
-        )}
-      </div>
-    </div>
+   <Breakdowns/>
   );
 }
 
