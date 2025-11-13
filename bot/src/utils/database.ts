@@ -278,8 +278,15 @@ export function saveInspection(inspection: InspectionData) {
   inspections.set(`${inspection.inspectorId}_${inspection.date}`, inspection);
 }
 
+export function getLatestInspection(): InspectionData | undefined {
+  const inspectionsArray = Array.from(inspections.values());
+  if (inspectionsArray.length === 0) return undefined;
+  // Sort by date descending
+  inspectionsArray.sort((a, b) => new Date(b.date.split('.').reverse().join('-')).getTime() - new Date(a.date.split('.').reverse().join('-')).getTime());
+  return inspectionsArray[0];
+}
+
 export function generateInspectionReport(inspection: InspectionData): Buffer {
-  const questions = loadChecklist();
   const workbook = XLSX.readFile(path.join(DATA_DIR, 'table1.xlsx'));
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
   const data = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as any[][];
@@ -287,12 +294,16 @@ export function generateInspectionReport(inspection: InspectionData): Buffer {
   // Create a map of questionId to answer
   const answerMap = new Map(inspection.answers.map(a => [a.questionId, a]));
 
+  let currentSection = '';
   // Update the data
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
-    if (row[0] && typeof row[0] === 'number' && row[1]) {
-      const section = row[0] < 10 ? 'А' : row[0] < 20 ? 'В1' : row[0] < 30 ? 'В2' : 'С'; // Approximate
-      const questionId = `${section}${row[0]}`;
+    if (row[0] && typeof row[0] === 'string' && /^[А-Я]/.test(row[0])) {
+      // Section header
+      currentSection = row[0].split(' ')[0];
+    } else if (row[0] && typeof row[0] === 'number' && row[1] && typeof row[1] === 'string') {
+      // Question row
+      const questionId = `${currentSection}${row[0]}`;
       const answer = answerMap.get(questionId);
       if (answer) {
         if (answer.complies) {
@@ -300,15 +311,10 @@ export function generateInspectionReport(inspection: InspectionData): Buffer {
         } else {
           row[3] = 0; // не соответствует
           row[4] = answer.comment || '';
-          // Photos would be attached separately or noted
         }
       }
-    } else if (row[1] && row[1].includes('Общий балл за раздел')) {
-      const section = row[1].split(' ')[3]; // e.g. "Общий балл за раздел А"
-      row[2] = inspection.sectionScores[section] || 0;
-    } else if (row[1] && row[1].includes('Итоговая оценка')) {
-      row[2] = inspection.finalScore;
     }
+    // Don't overwrite sum and final rows, let formulas calculate
   }
 
   // Write back

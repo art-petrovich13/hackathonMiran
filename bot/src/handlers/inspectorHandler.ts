@@ -560,7 +560,7 @@ async function finishInspection(ctx: Context, answers: any[]) {
   const reportBuffer = generateInspectionReport(inspection);
   await ctx.replyWithDocument(
     { source: reportBuffer, filename: `report_${user.tempData.date}.xlsx` },
-    { caption: '✅ Отчет по проверке готов!' }
+    { caption: '✅ Отчет по проверке готов! Для получения итоговой оценки разрешите редактирование файла.' }
   );
 
   updateUser(userId, { currentStep: undefined, tempData: undefined });
