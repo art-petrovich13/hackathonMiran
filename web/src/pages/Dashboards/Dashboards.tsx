@@ -6,14 +6,38 @@ import './Dashboards.scss';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
-// Генерация данных для трендов нарушений по участкам
+// Генерация данных для трендов нарушений по участкам/бригадам/категориям
 const generateTrendsData = () => {
   const months = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
-  return months.map(month => {
+
+  // Категории нарушений
+  const categories = ['Вибрация', 'Температура', 'Давление', 'Электрика', 'Механика'];
+
+  // Бригады
+  const teams = ['Бригада А', 'Бригада Б', 'Бригада В', 'Бригада Г'];
+
+  return months.map((month, index) => {
     const data: any = { month };
+
+    // Тренды по участкам (с сезонностью)
     facilities.forEach(facility => {
-      data[facility.name] = Math.floor(Math.random() * 20) + 1;
+      const baseValue = Math.floor(Math.random() * 15) + 5;
+      const seasonalFactor = [1.2, 1.1, 1.0, 0.9, 0.8, 0.7, 0.8, 0.9, 1.0, 1.1, 1.3, 1.4][index];
+      data[facility.name] = Math.floor(baseValue * seasonalFactor);
     });
+
+    // Тренды по категориям
+    categories.forEach(category => {
+      const baseValue = Math.floor(Math.random() * 12) + 3;
+      data[category] = Math.floor(baseValue * (0.8 + Math.random() * 0.4));
+    });
+
+    // Тренды по бригадам
+    teams.forEach(team => {
+      const baseValue = Math.floor(Math.random() * 10) + 2;
+      data[team] = Math.floor(baseValue * (0.7 + Math.random() * 0.6));
+    });
+
     return data;
   });
 };
@@ -39,15 +63,55 @@ const generateTopViolationsData = () => {
   })).sort((a, b) => b.count - a.count).slice(0, 8);
 };
 
+// Генерация данных для тепловой карты чек-листов
+const generateHeatmapData = () => {
+  const checklistItems = [
+    'Визуальный осмотр',
+    'Проверка вибрации',
+    'Температурный контроль',
+    'Проверка давления',
+    'Электрические параметры',
+    'Механические узлы',
+    'Система охлаждения',
+    'Безопасность оборудования'
+  ];
+
+  return facilities.map(facility => ({
+    facility: facility.name,
+    checklists: checklistItems.map(item => ({
+      name: item,
+      score: Math.floor(Math.random() * 100) + 1,
+      status: Math.random() > 0.7 ? 'critical' : Math.random() > 0.4 ? 'warning' : 'good'
+    }))
+  }));
+};
+
 // Генерация данных для выполнения планов проверок
 const generateInspectionData = () => {
-  return facilities.map(facility => ({
-    name: facility.name,
-    planned: Math.floor(Math.random() * 50) + 20,
-    completed: Math.floor(Math.random() * 40) + 10,
-    percentage: Math.floor(Math.random() * 100) + 1,
-    status: Math.random() > 0.5 ? 'completed' : 'pending'
-  }));
+  const currentDate = new Date();
+  const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+  const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+
+  return facilities.map(facility => {
+    const plannedInspections = Math.floor(Math.random() * 30) + 15;
+    const completedInspections = Math.floor(Math.random() * plannedInspections * 0.8) + Math.floor(plannedInspections * 0.1);
+    const percentage = Math.round((completedInspections / plannedInspections) * 100);
+
+    return {
+      name: facility.name,
+      planned: plannedInspections,
+      completed: completedInspections,
+      percentage,
+      status: percentage >= 90 ? 'excellent' : percentage >= 75 ? 'good' : percentage >= 60 ? 'warning' : 'critical',
+      schedule: {
+        daily: Math.floor(plannedInspections / 30),
+        weekly: Math.floor(plannedInspections / 4),
+        monthly: plannedInspections
+      },
+      lastInspection: new Date(currentDate.getTime() - Math.random() * 7 * 24 * 60 * 60 * 1000).toLocaleDateString('ru-RU'),
+      nextScheduled: new Date(currentDate.getTime() + Math.random() * 3 * 24 * 60 * 60 * 1000).toLocaleDateString('ru-RU')
+    };
+  });
 };
 
 const SEVERITY_COLORS = {
@@ -70,9 +134,12 @@ function Dashboards() {
   const [trendsData, setTrendsData] = useState<any[]>([]);
   const [topViolationsData, setTopViolationsData] = useState<any[]>([]);
   const [inspectionData, setInspectionData] = useState<any[]>([]);
+  const [heatmapData, setHeatmapData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('3m');
   const [showFilters, setShowFilters] = useState(false);
+  const [trendsView, setTrendsView] = useState<'facilities' | 'categories' | 'teams'>('facilities');
+  const [topViolationsCount, setTopViolationsCount] = useState(8);
   const [filters, setFilters] = useState({
     period: '3m',
     facilities: facilities.map(f => f.id),
@@ -85,11 +152,12 @@ function Dashboards() {
     // Имитация загрузки данных
     setTimeout(() => {
       setTrendsData(generateTrendsData());
-      setTopViolationsData(generateTopViolationsData());
+      setTopViolationsData(generateTopViolationsData().slice(0, topViolationsCount));
       setInspectionData(generateInspectionData());
+      setHeatmapData(generateHeatmapData());
       setLoading(false);
     }, 1500);
-  }, []);
+  }, [topViolationsCount]);
 
   // Фильтрация данных при изменении фильтров
   useEffect(() => {
@@ -278,12 +346,32 @@ function Dashboards() {
 
       {/* Main Dashboard Grid */}
       <div className="dashboard-grid">
-        {/* Тренды нарушений по участкам */}
+        {/* Тренды нарушений по участкам/бригадам/категориям */}
         <div className="dashboard-card trends-card">
           <div className="card-header">
             <div className="card-title">
               <TrendingUp size={20} />
-              <h2>Тренды нарушений по участкам</h2>
+              <h2>Тренды нарушений</h2>
+            </div>
+            <div className="trends-selector">
+              <button
+                className={`trend-btn ${trendsView === 'facilities' ? 'active' : ''}`}
+                onClick={() => setTrendsView('facilities')}
+              >
+                По участкам
+              </button>
+              <button
+                className={`trend-btn ${trendsView === 'categories' ? 'active' : ''}`}
+                onClick={() => setTrendsView('categories')}
+              >
+                По категориям
+              </button>
+              <button
+                className={`trend-btn ${trendsView === 'teams' ? 'active' : ''}`}
+                onClick={() => setTrendsView('teams')}
+              >
+                По бригадам
+              </button>
             </div>
           </div>
           <div className="chart-container">
@@ -322,18 +410,48 @@ function Dashboards() {
                   iconType="rect"
                   iconSize={12}
                 />
-                {facilities.slice(0, 3).map((facility, index) => (
-                  <Area
-                    key={facility.id}
-                    type="monotone"
-                    dataKey={facility.name}
-                    stroke={CHART_COLORS[index % CHART_COLORS.length]}
-                    fill={`url(#colorTrend${index + 1})`}
-                    strokeWidth={3}
-                    dot={{ fill: CHART_COLORS[index % CHART_COLORS.length], strokeWidth: 2, r: 4 }}
-                    activeDot={{ r: 6, strokeWidth: 0 }}
-                  />
-                ))}
+                {(() => {
+                  if (trendsView === 'facilities') {
+                    return facilities.slice(0, 3).map((facility, index) => (
+                      <Area
+                        key={facility.id}
+                        type="monotone"
+                        dataKey={facility.name}
+                        stroke={CHART_COLORS[index % CHART_COLORS.length]}
+                        fill={`url(#colorTrend${index + 1})`}
+                        strokeWidth={3}
+                        dot={{ fill: CHART_COLORS[index % CHART_COLORS.length], strokeWidth: 2, r: 4 }}
+                        activeDot={{ r: 6, strokeWidth: 0 }}
+                      />
+                    ));
+                  } else if (trendsView === 'categories') {
+                    return ['Вибрация', 'Температура', 'Давление'].map((category, index) => (
+                      <Area
+                        key={category}
+                        type="monotone"
+                        dataKey={category}
+                        stroke={CHART_COLORS[index % CHART_COLORS.length]}
+                        fill={`url(#colorTrend${index + 1})`}
+                        strokeWidth={3}
+                        dot={{ fill: CHART_COLORS[index % CHART_COLORS.length], strokeWidth: 2, r: 4 }}
+                        activeDot={{ r: 6, strokeWidth: 0 }}
+                      />
+                    ));
+                  } else { // teams
+                    return ['Бригада А', 'Бригада Б', 'Бригада В'].map((team, index) => (
+                      <Area
+                        key={team}
+                        type="monotone"
+                        dataKey={team}
+                        stroke={CHART_COLORS[index % CHART_COLORS.length]}
+                        fill={`url(#colorTrend${index + 1})`}
+                        strokeWidth={3}
+                        dot={{ fill: CHART_COLORS[index % CHART_COLORS.length], strokeWidth: 2, r: 4 }}
+                        activeDot={{ r: 6, strokeWidth: 0 }}
+                      />
+                    ));
+                  }
+                })()}
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -346,7 +464,19 @@ function Dashboards() {
               <AlertTriangle size={20} />
               <h2>Топ нарушений</h2>
             </div>
-            <span className="card-badge">8 активных</span>
+            <div className="violations-controls">
+              <select
+                value={topViolationsCount}
+                onChange={(e) => setTopViolationsCount(Number(e.target.value))}
+                className="count-selector"
+              >
+                <option value={5}>Топ 5</option>
+                <option value={8}>Топ 8</option>
+                <option value={10}>Топ 10</option>
+                <option value={15}>Топ 15</option>
+              </select>
+              <span className="card-badge">{topViolationsCount} активных</span>
+            </div>
           </div>
           <div className="chart-container">
             <ResponsiveContainer width="100%" height={280}>
@@ -390,14 +520,16 @@ function Dashboards() {
           </div>
         </div>
 
-        {/* Выполнение планов проверок */}
+        {/* Выполнение графика проверок (план/факт) */}
         <div className="dashboard-card inspection-card">
           <div className="card-header">
             <div className="card-title">
               <CheckCircle size={20} />
-              <h2>Планы проверок</h2>
+              <h2>График проверок (План/Факт)</h2>
             </div>
-            <div className="completion-rate">78%</div>
+            <div className="completion-rate">
+              {Math.round(inspectionData.reduce((sum, item) => sum + item.percentage, 0) / inspectionData.length)}%
+            </div>
           </div>
           <div className="chart-container">
             <ResponsiveContainer width="100%" height={200}>
@@ -412,9 +544,14 @@ function Dashboards() {
                   dataKey="percentage"
                 >
                   {inspectionData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={STATUS_COLORS[entry.status as keyof typeof STATUS_COLORS] || CHART_COLORS[index % CHART_COLORS.length]} 
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={
+                        entry.status === 'excellent' ? '#00cc66' :
+                        entry.status === 'good' ? '#66cc00' :
+                        entry.status === 'warning' ? '#ffaa00' :
+                        '#ff4444'
+                      }
                     />
                   ))}
                 </Pie>
@@ -422,8 +559,10 @@ function Dashboards() {
               </PieChart>
             </ResponsiveContainer>
             <div className="pie-center-label">
-              <div className="center-value">78%</div>
-              <div className="center-text">Выполнено</div>
+              <div className="center-value">
+                {Math.round(inspectionData.reduce((sum, item) => sum + item.percentage, 0) / inspectionData.length)}%
+              </div>
+              <div className="center-text">Выполнение плана</div>
             </div>
           </div>
           <div className="inspection-list">
@@ -431,13 +570,22 @@ function Dashboards() {
               <div key={index} className="inspection-item">
                 <div className="inspection-info">
                   <div className="inspection-name">{item.name}</div>
+                  <div className="inspection-details">
+                    <span>План: {item.planned} | Факт: {item.completed}</span>
+                    <span>Последняя: {item.lastInspection}</span>
+                    <span>Следующая: {item.nextScheduled}</span>
+                  </div>
                   <div className="inspection-progress">
                     <div className="progress-bar">
-                      <div 
+                      <div
                         className="progress-fill"
-                        style={{ 
+                        style={{
                           width: `${item.percentage}%`,
-                          backgroundColor: item.status === 'completed' ? STATUS_COLORS.completed : STATUS_COLORS.pending
+                          backgroundColor:
+                            item.status === 'excellent' ? '#00cc66' :
+                            item.status === 'good' ? '#66cc00' :
+                            item.status === 'warning' ? '#ffaa00' :
+                            '#ff4444'
                         }}
                       ></div>
                     </div>
@@ -445,10 +593,63 @@ function Dashboards() {
                   </div>
                 </div>
                 <div className={`inspection-status ${item.status}`}>
-                  {item.status === 'completed' ? '✅' : '⏳'}
+                  {item.status === 'excellent' ? 'Отлично' :
+                   item.status === 'good' ? 'Хорошо' :
+                   item.status === 'warning' ? 'Требует внимания' :
+                   'Критично'}
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Тепловая карта чек-листов */}
+        <div className="dashboard-card heatmap-card">
+          <div className="card-header">
+            <div className="card-title">
+              <BarChart3 size={20} />
+              <h2>Тепловая карта чек-листов</h2>
+            </div>
+          </div>
+          <div className="heatmap-container">
+            <div className="heatmap-grid">
+              <div className="heatmap-header">
+                <div className="facility-label">Участок</div>
+                {heatmapData[0]?.checklists.map((item: any, index: number) => (
+                  <div key={index} className="checklist-label">
+                    {item.name.split(' ')[0]}
+                  </div>
+                ))}
+              </div>
+              {heatmapData.map((facilityData: any, facilityIndex: number) => (
+                <div key={facilityIndex} className="heatmap-row">
+                  <div className="facility-name">{facilityData.facility}</div>
+                  {facilityData.checklists.map((checklist: any, checklistIndex: number) => (
+                    <div
+                      key={checklistIndex}
+                      className={`heatmap-cell ${checklist.status}`}
+                      title={`${checklist.name}: ${checklist.score}%`}
+                    >
+                      {checklist.score}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+            <div className="heatmap-legend">
+              <div className="legend-item">
+                <div className="legend-color good"></div>
+                <span>Хорошо (80-100%)</span>
+              </div>
+              <div className="legend-item">
+                <div className="legend-color warning"></div>
+                <span>Требует внимания (60-79%)</span>
+              </div>
+              <div className="legend-item">
+                <div className="legend-color critical"></div>
+                <span>Критично (0-59%)</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
