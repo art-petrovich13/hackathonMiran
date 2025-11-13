@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ChevronLeft, AlertTriangle, Clock, TrendingUp, BarChart3, Wrench, CheckCircle } from 'lucide-react';
+import { ChevronLeft, AlertTriangle, Clock, TrendingUp, BarChart3, Wrench, CheckCircle, X, ZoomIn } from 'lucide-react';
 import { calculateDeviceRisk, getFacilityRiskLevel } from '../../utils/riskCalculator';
 import { facilities as mockFacilities, devices as mockDevices, type Facility, type Device, type ErrorLog, type FacilityWithDevices, type DeviceWithErrors } from '../../data/objects';
 import './Breakdowns.scss';
@@ -33,10 +33,82 @@ interface RepairOption {
 
 interface DeviceWithErrorsExtended extends DeviceWithErrors {
   failure_prediction?: FailurePrediction;
+  imageUrl?: string;
 }
 
 interface FacilityWithDevicesExtended extends FacilityWithDevices {
   devices: DeviceWithErrorsExtended[];
+}
+
+// URL изображений приборов с соответствующими типами оборудования:
+const DEVICE_IMAGES: { [key: string]: string } = {
+  // Прессы и гидравлическое оборудование
+  'press-1': 'https://i-machine.ru/upload/iblock/72b/0x999frejwhfnvjye39xegzmmfgixj2b.jpg',
+  'press-2': 'https://мехтехникс.рф/d/gidravlika.jpg',
+
+  // CNC станки и металлообработка
+  'cnc-1': 'https://metall-machinery.ru/upload/medialibrary/4e8/fg9c9li9if7dga3a24cr6gs5ddy2a5w7/TB1bMs4dk9WBuNjSspeXXaz5VXa.jpg',
+  'cnc-2': 'https://rustan.ru/sites/default/files/file_attach/16k20-stanok.jpg',
+
+  // Конвейерные системы
+  'conveyor-1': 'https://belfirst.by/wp-content/uploads/2023/11/screenshot_4-730x474.jpg',
+  'conveyor-2': 'https://www.smttech.ru/upload/iblock/78c/u654ptkgx7b3vg0dnmf3qeij423oqyah/MWN_610XXL.jpg',
+
+  // Смесители и химическое оборудование
+  'mixer-1': 'https://katrinmet.ru/assets/images/articles/smesiteli.jpg',
+  'mixer-2': 'https://zzbo.ru/wp-content/uploads/2023/03/gruntosmesitel-snd-30-1917-1.jpg',
+
+  // Промышленные печи и термообработка
+  'furnace-1': 'https://dprom.online/wp-content/uploads/2020/12/Kamernaya-narevatelnaya-pech-1-1.jpg',
+  'furnace-2': 'https://belsklad.by/image/cache/catalog/data/N650_45AS_fmt-1200x900.jpg',
+
+  // Компрессоры и пневматика
+  'compressor-1': 'https://live.staticflickr.com/65535/52714069411_d6a102cecf_b.jpg',
+  'compressor-2': 'https://www.remeza.com/upload/iblock/6cb/sl_main_0.png',
+
+  // Насосы и гидравлика
+  'pump-1': 'https://media.www1.ru/fit-in/744x573/ixbt-data/751248/photo-2025-09-24-134613-68d3afe6f0068.jpeg',
+
+
+  // Генераторы и энергетика
+  'generator-1': 'https://megaliner.by/upload/iblock/763/asvcwq7e81s9zk9sb3xcsulvtwlej2ew/elektrostantsija_benzinovaja_varteg_g950_kitaj_5817_160294_1.jpg',
+  'generator-2': 'https://www.pnevmoteh.by/sites/pnevmoteh.by/files/images/qdfqm4qcsu9vc8obgzd3zk2bp240yreo.jpeg',
+
+ 
+};
+
+// Функция для получения изображения по типу устройства
+function getDeviceImageKey(deviceType: string): string {
+  const typeMappings: { [key: string]: string[] } = {
+    'press': ['press-1', 'press-2'],
+    'cnc': ['cnc-1', 'cnc-2'],
+    'mill': ['cnc-1', 'cnc-2'],
+    'lathe': ['cnc-1', 'cnc-2'],
+    'milling_machine': ['cnc-1', 'cnc-2'],
+    'conveyor': ['conveyor-1', 'conveyor-2'],
+    'assembly_line': ['conveyor-1', 'conveyor-2'],
+    'mixer': ['mixer-1', 'mixer-2'],
+    'furnace': ['furnace-1', 'furnace-2'],
+    'compressor': ['compressor-1', 'compressor-2'],
+    'pump': ['pump-1', 'pump-2'],
+    'generator': ['generator-1', 'generator-2'],
+    'robot': ['robot-1', 'robot-2'],
+    'industrial_robot': ['robot-1', 'robot-2'],
+    'packaging': ['packaging-1', 'packaging-2'],
+    'packaging_machine': ['packaging-1', 'packaging-2'],
+    'palletizer': ['packaging-1', 'packaging-2'],
+    'server': ['server-1', 'server-2'],
+    'server_rack': ['server-1', 'server-2']
+  };
+
+  for (const [key, values] of Object.entries(typeMappings)) {
+    if (deviceType.toLowerCase().includes(key)) {
+      return values[Math.floor(Math.random() * values.length)];
+    }
+  }
+
+  // Fallback
+  return 'press-1';
 }
 
 function Breakdowns() {
@@ -48,6 +120,7 @@ function Breakdowns() {
   const [chartType, setChartType] = useState<'bars' | 'radar'>('bars');
   const [selectedRepairOption, setSelectedRepairOption] = useState<{deviceId: string, optionId: string} | null>(null);
   const [confirmedRepairs, setConfirmedRepairs] = useState<{deviceId: string, optionId: string}[]>([]);
+  const [zoomedImage, setZoomedImage] = useState<{src: string, alt: string} | null>(null);
 
   useEffect(() => {
     loadData();
@@ -65,16 +138,18 @@ function Breakdowns() {
         const facilityDevices = devicesData.filter(d => d.facility_id === facility.id);
 
         const devicesWithErrors: DeviceWithErrorsExtended[] = facilityDevices.map(device => {
-          const deviceErrors = errorLogsData.filter(e => e.device_id === device.id);
-          const { risk_score, failure_probability } = calculateDeviceRisk(device, deviceErrors);
-          const failurePrediction = predictFailure(device, deviceErrors);
+           const deviceErrors = errorLogsData.filter(e => e.device_id === device.id);
+           const { risk_score, failure_probability } = calculateDeviceRisk(device, deviceErrors);
+           const failurePrediction = predictFailure(device, deviceErrors);
+           const imageUrl = DEVICE_IMAGES[getDeviceImageKey(device.type)] || DEVICE_IMAGES['press-1']; // fallback image
 
           return {
             ...device,
             error_logs: deviceErrors,
             risk_score,
             failure_probability,
-            failure_prediction: failurePrediction
+            failure_prediction: failurePrediction,
+            imageUrl
           };
         });
 
@@ -96,47 +171,46 @@ function Breakdowns() {
   }
 
   // Функция для генерации моковых ошибок
-  // Функция для генерации моковых ошибок
-function generateMockErrorLogs(devices: Device[]): ErrorLog[] {
-  const errorLogs: ErrorLog[] = [];
-  const errorTypes = ['vibration', 'temperature', 'pressure', 'electrical', 'mechanical', 'software'];
-  const errorDescriptions = {
-    vibration: 'Превышение допустимого уровня вибрации',
-    temperature: 'Критическое значение температуры',
-    pressure: 'Отклонение давления от нормы',
-    electrical: 'Сбой в электрической системе',
-    mechanical: 'Механическая неисправность',
-    software: 'Ошибка программного обеспечения'
-  };
-  const now = new Date();
+  function generateMockErrorLogs(devices: Device[]): ErrorLog[] {
+    const errorLogs: ErrorLog[] = [];
+    const errorTypes = ['vibration', 'temperature', 'pressure', 'electrical', 'mechanical', 'software'];
+    const errorDescriptions = {
+      vibration: 'Превышение допустимого уровня вибрации',
+      temperature: 'Критическое значение температуры',
+      pressure: 'Отклонение давления от нормы',
+      electrical: 'Сбой в электрической системе',
+      mechanical: 'Механическая неисправность',
+      software: 'Ошибка программного обеспечения'
+    };
+    const now = new Date();
 
-  devices.forEach(device => {
-    // Для каждого устройства генерируем случайное количество ошибок (0-8)
-    const errorCount = Math.floor(Math.random() * 8);
-    
-    for (let i = 0; i < errorCount; i++) {
-      const daysAgo = Math.floor(Math.random() * 60); // Ошибки за последние 60 дней
-      const errorDate = new Date(now);
-      errorDate.setDate(now.getDate() - daysAgo);
+    devices.forEach(device => {
+      // Для каждого устройства генерируем случайное количество ошибок (0-8)
+      const errorCount = Math.floor(Math.random() * 8);
       
-      const severity = Math.floor(Math.random() * 5) + 1; // 1-5
-      const errorType = errorTypes[Math.floor(Math.random() * errorTypes.length)];
-      
-      errorLogs.push({
-        id: `error-${device.id}-${i}`,
-        device_id: device.id,
-        error_type: errorType,
-        severity: severity,
-        description: `${errorDescriptions[errorType as keyof typeof errorDescriptions]} на устройстве ${device.name}`,
-        reported_at: errorDate.toISOString(),
-        resolved_at: severity < 4 ? new Date(errorDate.getTime() + Math.random() * 24 * 60 * 60 * 1000).toISOString() : null,
-        resolved_by: severity < 4 ? 'system' : null
-      } as ErrorLog);
-    }
-  });
+      for (let i = 0; i < errorCount; i++) {
+        const daysAgo = Math.floor(Math.random() * 60); // Ошибки за последние 60 дней
+        const errorDate = new Date(now);
+        errorDate.setDate(now.getDate() - daysAgo);
+        
+        const severity = Math.floor(Math.random() * 5) + 1; // 1-5
+        const errorType = errorTypes[Math.floor(Math.random() * errorTypes.length)];
+        
+        errorLogs.push({
+          id: `error-${device.id}-${i}`,
+          device_id: device.id,
+          error_type: errorType,
+          severity: severity,
+          description: `${errorDescriptions[errorType as keyof typeof errorDescriptions]} на устройстве ${device.name}`,
+          reported_at: errorDate.toISOString(),
+          resolved_at: severity < 4 ? new Date(errorDate.getTime() + Math.random() * 24 * 60 * 60 * 1000).toISOString() : null,
+          resolved_by: severity < 4 ? 'system' : null
+        } as ErrorLog);
+      }
+    });
 
-  return errorLogs.sort((a, b) => new Date(b.reported_at).getTime() - new Date(a.reported_at).getTime());
-}
+    return errorLogs.sort((a, b) => new Date(b.reported_at).getTime() - new Date(a.reported_at).getTime());
+  }
 
   // Улучшенная функция прогнозирования поломок с детальным анализом
   function predictFailure(device: Device, errorLogs: ErrorLog[]): FailurePrediction {
@@ -570,6 +644,16 @@ function generateMockErrorLogs(devices: Device[]): ErrorLog[] {
     console.log(`Подтвержден ремонт ${optionId} для устройства ${deviceId}`);
   }
 
+  // Функция для открытия увеличенного изображения
+  function handleImageZoom(src: string, alt: string) {
+    setZoomedImage({ src, alt });
+  }
+
+  // Функция для закрытия увеличенного изображения
+  function handleImageClose() {
+    setZoomedImage(null);
+  }
+
   // Функция для получения приоритетных устройств
   function getPriorityDevices() {
     if (!selectedFacility) return [];
@@ -653,22 +737,6 @@ function generateMockErrorLogs(devices: Device[]): ErrorLog[] {
     return labels[timeframe];
   }
 
-  // Данные для графика
-  const priorityDevices = getPriorityDevices();
-  const criticalDevices = getCriticalDevices();
-  
-  const displayDevices = priorityView === 'critical' ? criticalDevices : 
-                        priorityView === 'high' ? priorityDevices : 
-                        selectedFacility?.devices || [];
-
-  // Статистика для графика
-  const riskStats = {
-    critical: criticalDevices.length,
-    high: priorityDevices.length - criticalDevices.length,
-    medium: selectedFacility ? selectedFacility.devices.filter(d => d.risk_score >= 30 && d.risk_score < 60).length : 0,
-    low: selectedFacility ? selectedFacility.devices.filter(d => d.risk_score < 30).length : 0
-  };
-
   // Рендер панели прогнозирования
   const renderPredictionPanel = (device: DeviceWithErrorsExtended) => {
     const prediction = device.failure_prediction!;
@@ -677,6 +745,23 @@ function generateMockErrorLogs(devices: Device[]): ErrorLog[] {
 
     return (
       <div className="device-details">
+        {/* Блок с изображением устройства */}
+        <div className="device-image-section">
+          <div className="image-container">
+            <img
+              src={device.imageUrl}
+              alt={device.name}
+              className="device-main-image"
+              onClick={() => handleImageZoom(device.imageUrl!, device.name)}
+            />
+          </div>
+          <div className="image-caption">
+            <strong>Тип оборудования:</strong> {device.name}
+            <br />
+            <strong>Описание:</strong> {getDeviceDescription(device.id)}
+          </div>
+        </div>
+
         <div className="prediction-panel">
           <h4>
             <TrendingUp size={20} />
@@ -911,6 +996,46 @@ function generateMockErrorLogs(devices: Device[]): ErrorLog[] {
     );
   };
 
+  // Функция для получения описания устройства по его ID
+  function getDeviceDescription(deviceId: string): string {
+    const descriptions: { [key: string]: string } = {
+      'press-1': 'Гидравлический пресс 100т - используется для штамповки металлических деталей',
+      'press-2': 'Механический пресс 50т - для холодной штамповки и вырубки',
+      'cnc-1': '5-осевой фрезерный станок с ЧПУ - обработка сложных металлических деталей',
+      'cnc-2': 'Токарный станок с ЧПУ - производство валов и осей',
+      'conveyor-1': 'Ленточный конвейер 20м - транспортировка готовой продукции',
+      'conveyor-2': 'Роликовый конвейер 15м - перемещение заготовок между участками',
+      'mixer-1': 'Промышленный смеситель 500л - приготовление химических составов',
+      'mixer-2': 'Лопастной смеситель 200л - для сухих смесей и порошков',
+      'furnace-1': 'Промышленная печь 800°C - термообработка металлов',
+      'furnace-2': 'Сушильная камера 200°C - сушка покрытий и материалов',
+      'compressor-1': 'Винтовой компрессор 100л/с - подача сжатого воздуха',
+      'compressor-2': 'Поршневой компрессор 50л/с - для пневмоинструмента',
+      'pump-1': 'Центробежный насос 100м³/ч - циркуляция охлаждающей жидкости',
+      'pump-2': 'Мембранный насос 20л/мин - перекачка химических реагентов',
+      'generator-1': 'Дизельный генератор 500кВт - резервное электропитание',
+      'generator-2': 'Газовый генератор 250кВт - аварийное энергоснабжение'
+    };
+    
+    return descriptions[deviceId] || 'Промышленное оборудование общего назначения';
+  }
+
+  // Данные для графика
+  const priorityDevices = getPriorityDevices();
+  const criticalDevices = getCriticalDevices();
+  
+  const displayDevices = priorityView === 'critical' ? criticalDevices : 
+                        priorityView === 'high' ? priorityDevices : 
+                        selectedFacility?.devices || [];
+
+  // Статистика для графика
+  const riskStats = {
+    critical: criticalDevices.length,
+    high: priorityDevices.length - criticalDevices.length,
+    medium: selectedFacility ? selectedFacility.devices.filter(d => d.risk_score >= 30 && d.risk_score < 60).length : 0,
+    low: selectedFacility ? selectedFacility.devices.filter(d => d.risk_score < 30).length : 0
+  };
+
   if (loading) {
     return (
       <div className="breakdowns-container">
@@ -921,6 +1046,24 @@ function generateMockErrorLogs(devices: Device[]): ErrorLog[] {
 
   return (
     <div className="breakdowns-container">
+      {/* Модальное окно для увеличенного изображения */}
+      {zoomedImage && (
+        <div className="image-modal" onClick={handleImageClose}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="close-button" onClick={handleImageClose}>
+              <X size={24} />
+            </button>
+            <img src={zoomedImage.src} alt={zoomedImage.alt} className="zoomed-image" onClick={handleImageClose} />
+            <div className="image-info">
+              <h3>{zoomedImage.alt}</h3>
+              <p>{getDeviceDescription(
+                Object.keys(DEVICE_IMAGES).find(key => DEVICE_IMAGES[key] === zoomedImage.src) || ''
+              )}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {!selectedFacility ? (
         <>
           <h1 className="header-title">Система мониторинга и прогнозирования оборудования</h1>
@@ -1063,17 +1206,9 @@ function generateMockErrorLogs(devices: Device[]): ErrorLog[] {
                           const x = 150 + Math.cos(angle) * 130;
                           const y = 150 + Math.sin(angle) * 130;
                           return (
-                            <div
-                              key={`axis-${device.id}`}
-                              className="radar-axis"
-                              style={{
-                                left: x,
-                                top: y,
-                                transform: `translate(-50%, -50%) rotate(${angle * 180 / Math.PI}deg)`
-                              }}
-                            >
+                            
                               <div className="axis-label">{device.name.split(' ')[0]}</div>
-                            </div>
+                          
                           );
                         })}
                       </div>
@@ -1104,26 +1239,7 @@ function generateMockErrorLogs(devices: Device[]): ErrorLog[] {
                       </div>
                       {/* Добавляем центр радара */}
                       <div className="radar-center">
-                        <div className="center-label">Центр</div>
-                      </div>
-                      {/* Легенда */}
-                      <div className="radar-legend">
-                        <div className="legend-item">
-                          <div className="legend-color priority-critical"></div>
-                          <span>Критический</span>
-                        </div>
-                        <div className="legend-item">
-                          <div className="legend-color priority-high"></div>
-                          <span>Высокий</span>
-                        </div>
-                        <div className="legend-item">
-                          <div className="legend-color priority-medium"></div>
-                          <span>Средний</span>
-                        </div>
-                        <div className="legend-item">
-                          <div className="legend-color priority-low"></div>
-                          <span>Низкий</span>
-                        </div>
+                        <button className="center-button">Центр</button>
                       </div>
                     </div>
                   </div>
@@ -1197,6 +1313,45 @@ function generateMockErrorLogs(devices: Device[]): ErrorLog[] {
                     )}
                   </div>
                 </div>
+
+                {/* Галерея приборов */}
+                <div className="devices-gallery">
+                  <h4>Оборудование цеха</h4>
+                  <div className="gallery-grid">
+                    {selectedFacility.devices.slice(0, 6).map(device => {
+                      const priority = getPriorityLevel(device);
+                      return (
+                        <div 
+                          key={device.id} 
+                          className={`gallery-item priority-${priority}`}
+                          onClick={() => handleDeviceClick(device.id)}
+                        >
+                          <div className="device-image">
+                            <img 
+                              src={device.imageUrl} 
+                              alt={device.name}
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = '';
+                              }}
+                            />
+                            <div className="device-overlay">
+                              <div className="device-risk">{device.risk_score}</div>
+                            </div>
+                          </div>
+                          <div className="device-info">
+                            <div className="device-name">{device.name}</div>
+                            <div className="device-priority">
+                              <span className={`priority-dot priority-${priority}`}></span>
+                              {priority === 'critical' ? 'КРИТИЧЕСКИЙ' : 
+                               priority === 'high' ? 'ВЫСОКИЙ' :
+                               priority === 'medium' ? 'СРЕДНИЙ' : 'НИЗКИЙ'}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1217,6 +1372,15 @@ function generateMockErrorLogs(devices: Device[]): ErrorLog[] {
                     }`}
                     onClick={() => handleDeviceClick(device.id)}
                   >
+                    <div className="device-image-small">
+                      <img 
+                        src={device.imageUrl} 
+                        alt={device.name}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'https://avatars.mds.yandex.net/get-altay/4971637/2a0000017d7611dffc402d53a45cd3fdb1f0/L_height';
+                        }}
+                      />
+                    </div>
                     <div className="device-info">
                       <div className="device-name-row">
                         <div className="device-name">{device.name}</div>
