@@ -54,7 +54,8 @@ export async function handleManagerFlow(ctx: Context) {
       'Выберите тип отчета:',
       Markup.keyboard([
         ['📊 Отчеты за неделю', '📈 Аналитика'],
-        ['🔮 Прогноз', '⬅️ Назад']
+        ['🔮 Прогноз'],
+        ['⬅️ Назад']
       ]).resize()
     );
     return;

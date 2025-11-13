@@ -49,7 +49,7 @@ async function showMainMenu(ctx: Context, user: any) {
       await ctx.reply(
         MESSAGES.inspectorMenu,
         Markup.keyboard([
-          ['📅 Расписание на неделю', '📅 Расписание на 2 недели'],
+          ['📅 Расписание на неделю'],
           ['⏰ Согласовать время', '📸 Начать проверку']
         ]).resize()
       );
@@ -70,7 +70,9 @@ async function showMainMenu(ctx: Context, user: any) {
         MESSAGES.supervisorMenu,
         Markup.keyboard([
           ['📅 Мое расписание', '⏰ Запросы на согласование'],
-          ['🔧 Запрос о поломке', '⚠️ Недочеты']
+          ['🔧 Запрос о поломке'],
+          ['⚠️ Недочеты']
+          
         ]).resize()
       );
       break;

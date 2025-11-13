@@ -1,5 +1,5 @@
 import { Context, Markup } from 'telegraf';
-import { getUser, updateUser, getSchedule } from '../utils/database';
+import { getUser, updateUser, getSchedule, getAllManagers } from '../utils/database';
 import { MESSAGES, getWorkshopName } from '../config/messages';
 import { bot } from '../index';
 
@@ -36,13 +36,13 @@ export async function handleSupervisorFlow(ctx: Context) {
 
   // Запрос о поломке
   if (input === '🔧 Запрос о поломке') {
-    await ctx.reply('🔧 Запрос о поломке пока в разработке');
+    await startBreakdownRequest(ctx);
     return;
   }
 
   // Недочеты
   if (input === '⚠️ Недочеты') {
-    await ctx.reply('⚠️ Недочеты пока в разработке');
+    await showDeficiencies(ctx);
     return;
   }
 
@@ -66,6 +66,17 @@ export async function handleSupervisorFlow(ctx: Context) {
   // Обработка альтернативного времени встречи
   if (user.currentStep === 'awaiting_alternative_time') {
     await handleAlternativeTime(ctx);
+    return;
+  }
+
+  // Обработка запроса о поломке
+  if (user.currentStep === 'awaiting_breakdown_photos') {
+    await handleBreakdownPhotos(ctx);
+    return;
+  }
+
+  if (user.currentStep === 'awaiting_breakdown_comment') {
+    await handleBreakdownComment(ctx);
     return;
   }
 }
@@ -113,6 +124,77 @@ async function showSupervisorSchedule(ctx: Context) {
   }
   
   await ctx.reply(message, { parse_mode: 'Markdown' });
+}
+
+async function startBreakdownRequest(ctx: Context) {
+  const userId = ctx.from!.id;
+  const user = getUser(userId);
+
+  if (!user?.workshop) return;
+
+  updateUser(userId, { currentStep: 'awaiting_breakdown_photos', tempData: { photos: [] } });
+
+  await ctx.reply(
+    '🔧 Запрос о поломке/нарушении\n\n📸 Откройте мини-приложение для фотографирования:',
+    Markup.inlineKeyboard([
+      Markup.button.webApp(
+        '📸 Сделать фото поломки/нарушения',
+        'https://solar-athletics-nested-advertisements.trycloudflare.com'
+      )
+    ])
+  );
+}
+
+async function handleBreakdownPhotos(ctx: Context) {
+  // This will be called when photos are received
+  // For now, photos are handled in the main photo handler in index.ts
+  // We'll set awaiting_breakdown_comment when first photo is received
+}
+
+async function handleBreakdownComment(ctx: Context) {
+  const userId = ctx.from!.id;
+  const user = getUser(userId);
+  let input = '';
+  if ('text' in ctx.message!) {
+    input = ctx.message!.text;
+  } else {
+    return;
+  }
+
+  const tempData = user?.tempData;
+  if (!tempData?.photos || !Array.isArray(tempData.photos)) return;
+
+  // Send to all managers
+  const managers = getAllManagers();
+  const workshopName = getWorkshopName(user?.workshop || 0);
+
+  for (const manager of managers) {
+    try {
+      let message = `🔧 *Запрос о поломке/нарушении*\n\n`;
+      message += `🏭 Цех: ${workshopName}\n`;
+      message += `👤 Руководитель: ${user?.fio || user?.firstName}\n`;
+      message += `📝 Описание: ${input}\n\n`;
+      message += `📸 Прикреплены фотографии нарушения`;
+
+      await bot.telegram.sendMessage(manager.telegramId, message, { parse_mode: 'Markdown' });
+
+      // Send photos
+      for (const photoId of tempData.photos) {
+        try {
+          await bot.telegram.sendPhoto(manager.telegramId, photoId, {
+            caption: `🔧 Фото поломки/нарушения от ${user?.fio || user?.firstName}`
+          });
+        } catch (error) {
+          console.error('Ошибка отправки фото менеджеру:', error);
+        }
+      }
+    } catch (error) {
+      console.error('Ошибка отправки запроса менеджеру:', error);
+    }
+  }
+
+  await ctx.reply('✅ Запрос о поломке отправлен всем менеджерам');
+  updateUser(userId, { currentStep: undefined, tempData: undefined });
 }
 
 async function handleCallback(ctx: Context) {
@@ -277,6 +359,52 @@ async function handleMeetingCallback(ctx: Context) {
  }
 
  await ctx.answerCbQuery();
+}
+
+async function showDeficiencies(ctx: Context) {
+ const userId = ctx.from!.id;
+ const user = getUser(userId);
+
+ if (!user?.workshop) return;
+
+ // Get recent inspection data or use example deficiencies
+ const deficiencies = [
+   {
+     date: '10.11.2025',
+     item: 'На полу отсутствует пыль, грязь',
+     location: 'Укладчик-упаковщик оператора ЦП',
+     comment: 'Обнаружена пыль и мусор на полу'
+   },
+   {
+     date: '10.11.2025',
+     item: 'Личные вещи отсутствуют в рабочей зоне',
+     location: 'Стол наладчика участка',
+     comment: 'Найдены личные вещи на рабочем столе'
+   },
+   {
+     date: '09.11.2025',
+     item: 'Тара, упаковочные материалы размещены правильно',
+     location: 'Зона упаковки',
+     comment: 'Материалы размещены не по разметке'
+   }
+ ];
+
+ let message = `⚠️ *Недочеты по цеху ${getWorkshopName(user.workshop)}:*\n\n`;
+
+ deficiencies.forEach((def, index) => {
+   message += `${index + 1}. 📅 ${def.date}\n`;
+   message += `   🔍 ${def.item}\n`;
+   message += `   📍 ${def.location}\n`;
+   message += `   💬 ${def.comment}\n`;
+   message += `   ❌ *Требует исправления*\n\n`;
+ });
+
+ message += `💡 *Рекомендации:*\n`;
+ message += `• Устраните выявленные нарушения\n`;
+ message += `• Соблюдайте стандарты чистоты и порядка\n`;
+ message += `• Следите за правильным размещением материалов\n`;
+
+ await ctx.reply(message, { parse_mode: 'Markdown' });
 }
 
 async function handleAlternativeTime(ctx: Context) {

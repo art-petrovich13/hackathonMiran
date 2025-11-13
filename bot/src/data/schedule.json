@@ -192,8 +192,8 @@
         },
         {
           "workshop": 1,
-          "inspector": "Петрович Артем Сергеевич",
-          "inspectorId": 1024422309,
+          "inspector": "Петров Алекс Иванович",
+          "inspectorId": 0,
           "status": "pending"
         },
         {
@@ -222,8 +222,8 @@
       "assignments": [
         {
           "workshop": 4,
-          "inspector": "Петрович Артем Сергеевич",
-          "inspectorId": 1024422309,
+          "inspector": "Краснова Ирина Анатольевна",
+          "inspectorId": 2,
           "status": "pending"
         },
         {

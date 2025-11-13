@@ -95,7 +95,53 @@ bot.on('photo', async (ctx) => {
   const userId = ctx.chat.id; // For private chats, chat.id is user.id
   const user = getUser(userId);
 
-  if (!user || user.role !== 'inspector' || user.currentStep !== 'awaiting_photos') {
+  if (!user) return;
+
+  // Handle inspection photos for inspectors
+  if (user.role === 'inspector' && user.currentStep === 'awaiting_photos') {
+    const photo = ctx.message.photo[ctx.message.photo.length - 1]; // Largest
+    const fileId = photo.file_id;
+
+    const photos = user.tempData.photos || [];
+    photos.push(fileId);
+
+    // For inspection, ask for comment after first photo
+    if (!user.tempData.commentAsked) {
+      await bot.telegram.sendMessage(userId, '📝 Оставьте комментарий по фото(фоткам):');
+      updateUser(userId, {
+        currentStep: 'awaiting_comment',
+        tempData: { ...user.tempData, photos, commentAsked: true }
+      });
+    } else {
+      // Update photos array
+      updateUser(userId, {
+        tempData: { ...user.tempData, photos }
+      });
+    }
+    return;
+  }
+
+  // Handle breakdown photos for supervisors
+  if (user.role === 'supervisor' && user.currentStep === 'awaiting_breakdown_photos') {
+    const photo = ctx.message.photo[ctx.message.photo.length - 1]; // Largest
+    const fileId = photo.file_id;
+
+    const photos = user.tempData.photos || [];
+    photos.push(fileId);
+
+    // For breakdown, ask for comment after first photo
+    if (!user.tempData.commentAsked) {
+      await bot.telegram.sendMessage(userId, '📝 Опишите, что произошло:');
+      updateUser(userId, {
+        currentStep: 'awaiting_breakdown_comment',
+        tempData: { ...user.tempData, photos, commentAsked: true }
+      });
+    } else {
+      // Update photos array
+      updateUser(userId, {
+        tempData: { ...user.tempData, photos }
+      });
+    }
     return;
   }
 
@@ -154,7 +200,8 @@ app.post('/upload', upload.array('photos', 10), async (req, res) => {
   console.log(`📦 Получено ${files.length} файлов для пользователя ${chatId}, mode: ${mode}`);
 
   const user = getUser(parseInt(chatId));
-  const isInspection = user && user.currentStep === 'awaiting_photos';
+  const isInspection = user && user.role === 'inspector' && user.currentStep === 'awaiting_photos';
+  const isBreakdown = user && user.role === 'supervisor' && user.currentStep === 'awaiting_breakdown_photos';
 
   try {
     if (!isInspection) {
@@ -206,6 +253,13 @@ app.post('/upload', upload.array('photos', 10), async (req, res) => {
           });
         }
       }
+    } else if (isBreakdown) {
+      // Handle breakdown photos
+      await bot.telegram.sendMessage(chatId, '📝 Опишите, что произошло:');
+      updateUser(parseInt(chatId), {
+        currentStep: 'awaiting_breakdown_comment',
+        tempData: { ...user.tempData, photos: sentPhotos, commentAsked: true }
+      });
     } else {
       await bot.telegram.sendMessage(
         chatId,

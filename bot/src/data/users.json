@@ -3,27 +3,7 @@
     "telegramId": 1024422309,
     "firstName": "Artem",
     "fio": "Петрович Артем Сергеевич",
-    "role": "inspector",
-    "currentStep": "awaiting_comment",
-    "tempData": {
-      "workshop": 4,
-      "currentQuestion": 0,
-      "answers": [
-        {
-          "questionId": "complies",
-          "complies": false,
-          "photos": [],
-          "comment": ""
-        }
-      ],
-      "date": "13.11.2025",
-      "pendingQuestion": "complies",
-      "photos": [
-        "AgACAgIAAxkDAAIGZ2kV-BK57BodyUjrj-HT9djAhl4JAAJYDWsbwDawSP3T7RyiFkoAAQEAAwIAA3cAAzYE"
-      ],
-      "commentAsked": true,
-      "attempt": 1
-    }
+    "role": "inspector"
   },
   {
     "telegramId": 1024252830,

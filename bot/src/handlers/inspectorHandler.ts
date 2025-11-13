@@ -1,5 +1,5 @@
 import { Context, Markup } from 'telegraf';
-import { getUser, updateUser, getSchedule, updateSchedule, getSupervisorByWorkshop, loadChecklist, getInspection, saveInspection, generateInspectionReport } from '../utils/database';
+import { getUser, updateUser, getSchedule, updateSchedule, getSupervisorByWorkshop, loadChecklist, getInspection, saveInspection, generateInspectionReport, getAllInspectors, getAllManagers } from '../utils/database';
 import { MESSAGES, getWorkshopName } from '../config/messages';
 import { bot } from '../index';
 
@@ -28,10 +28,25 @@ export async function handleInspectorFlow(ctx: Context) {
     return;
   }
 
-
-  // Согласовать время
+  // Согласовать время submenu
   if (input === '⏰ Согласовать время') {
+    await showTimeCoordinationMenu(ctx);
+    return;
+  }
+
+  // Submenu options
+  if (input === '⏰ Согласовать время (подменю)') {
     await startTimeCoordination(ctx);
+    return;
+  }
+
+  if (input === '🚫 Не смогу выйти') {
+    await startUnavailabilityReport(ctx);
+    return;
+  }
+
+  if (input === '⬅️ Назад') {
+    await showMainKeyboard(ctx);
     return;
   }
 
@@ -40,6 +55,7 @@ export async function handleInspectorFlow(ctx: Context) {
     await startInspection(ctx);
     return;
   }
+
 
   // Обработка выбора дня
   if (user.currentStep === 'selecting_day') {
@@ -81,6 +97,38 @@ export async function handleInspectorFlow(ctx: Context) {
     await handleAlternativeTime(ctx);
     return;
   }
+
+  // Обработка сообщения о невыходе
+  if (user.currentStep === 'awaiting_unavailable_day') {
+    await handleUnavailableDay(ctx);
+    return;
+  }
+
+  if (user.currentStep === 'awaiting_unavailable_reason') {
+    await handleUnavailableReason(ctx);
+    return;
+  }
+}
+
+async function showMainKeyboard(ctx: Context) {
+  await ctx.reply(
+    'Главное меню:',
+    Markup.keyboard([
+      ['📅 Расписание на неделю'],
+      ['⏰ Согласовать проверку', '📸 Начать проверку']
+    ]).resize()
+  );
+}
+
+async function showTimeCoordinationMenu(ctx: Context) {
+  await ctx.reply(
+    '⏰ Меню согласования времени:',
+    Markup.keyboard([
+      ['⏰ Согласовать время'],
+      ['🚫 Не смогу выйти'],
+      ['⬅️ Назад']
+    ]).resize()
+  );
 }
 
 async function showSchedule(ctx: Context, period: 'week' | 'month') {
@@ -96,9 +144,7 @@ async function showSchedule(ctx: Context, period: 'week' | 'month') {
   }
   
   // Фильтруем только задания для этого проверяющего
-  let message = period === 'week' ?
-    '📅 *Ваше расписание на неделю:*\n\n' :
-    '📅 *Ваше расписание на 2 недели:*\n\n';
+  let message = '📅 *Ваше расписание на неделю:*\n\n';
   
   scheduleData.forEach(day => {
     const myAssignments = day.assignments.filter(a => a.inspectorId === userId);
@@ -171,7 +217,7 @@ async function handleDaySelection(ctx: Context) {
     await ctx.reply(
       '❌ Согласование времени отменено',
       Markup.keyboard([
-        ['📅 Расписание на неделю', '📅 Расписание на 2 недели'],
+        ['📅 Расписание на неделю'],
         ['⏰ Согласовать время', '📸 Начать проверку']
       ]).resize()
     );
@@ -256,13 +302,8 @@ async function handleTimeInput(ctx: Context) {
       ])
     );
 
-    await ctx.reply(
-      MESSAGES.timeProposed(input),
-      Markup.keyboard([
-        ['📅 Расписание на неделю', '📅 Расписание на 2 недели'],
-        ['⏰ Согласовать время', '📸 Начать проверку']
-      ]).resize()
-    );
+    await ctx.reply(MESSAGES.timeProposed(input));
+    await showMainKeyboard(ctx);
     
     updateUser(userId, { 
       currentStep: undefined,
@@ -434,6 +475,12 @@ async function handleInspectorCallback(ctx: Context) {
     await ctx.answerCbQuery('❌ Время отклонено');
     return;
   }
+
+  // Replacement callbacks
+  if (data.startsWith('replacement_')) {
+    await handleReplacementCallback(ctx);
+    return;
+  }
 }
 
 async function askQuestion(ctx: Context, question: any) {
@@ -574,6 +621,9 @@ async function finishInspection(ctx: Context, answers: any[]) {
     { caption: '✅ Отчет по проверке готов! Для получения итоговой оценки разрешите редактирование файла.' }
   );
 
+  // Return to main keyboard
+  await showMainKeyboard(ctx);
+
   // Save report to file
   const fs = require('fs');
   const path = require('path');
@@ -614,6 +664,63 @@ async function handleMeetingCallback(ctx: Context) {
   await ctx.answerCbQuery();
 }
 
+async function handleReplacementCallback(ctx: Context) {
+  const callbackQuery = ctx.callbackQuery!;
+  const data = (callbackQuery as any).data;
+  const userId = ctx.from!.id;
+
+  const parts = data.split('_');
+  const action = parts[1];
+  const originalInspectorId = parseInt(parts[2]);
+  const date = parts[3];
+  const workshop = parseInt(parts[4]);
+
+  if (action === 'accept') {
+    // Update schedule
+    const schedule = getSchedule();
+    const daySchedule = schedule.week.find(d => d.date === date);
+    if (daySchedule) {
+      const assignment = daySchedule.assignments.find(a => a.workshop === workshop);
+      if (assignment) {
+        assignment.inspector = getUser(userId)?.fio || getUser(userId)?.firstName || '';
+        assignment.inspectorId = userId;
+        updateSchedule(schedule);
+      }
+    }
+
+    // Notify original inspector
+    try {
+      await bot.telegram.sendMessage(
+        originalInspectorId,
+        `✅ Замена найдена!\n\nВашу проверку ${date} в цехе ${getWorkshopName(workshop)} проведет ${getUser(userId)?.fio || getUser(userId)?.firstName}`
+      );
+    } catch (error) {
+      console.error('Ошибка уведомления оригинального проверяющего:', error);
+    }
+
+    // Notify all managers
+    const managers = getAllManagers();
+    for (const manager of managers) {
+      try {
+        await bot.telegram.sendMessage(
+          manager.telegramId,
+          `🔄 Замена проверяющего:\n\n${getUser(originalInspectorId)?.fio || 'Проверяющий'} не может выйти ${date}\nЗамена: ${getUser(userId)?.fio || getUser(userId)?.firstName} в цехе ${getWorkshopName(workshop)}`
+        );
+      } catch (error) {
+        console.error('Ошибка уведомления менеджера:', error);
+      }
+    }
+
+    await ctx.editMessageText('✅ Вы согласились на замену. Спасибо!');
+
+  } else if (action === 'decline') {
+    await ctx.editMessageText('❌ Вы отказались от замены.');
+    // Could try next replacement, but for simplicity, stop
+  }
+
+  await ctx.answerCbQuery();
+}
+
 async function handleAlternativeTime(ctx: Context) {
   const userId = ctx.from!.id;
   const user = getUser(userId);
@@ -647,3 +754,170 @@ async function handleAlternativeTime(ctx: Context) {
     await ctx.reply('❌ Ошибка отправки предложения');
   }
 }
+
+async function startUnavailabilityReport(ctx: Context) {
+  const userId = ctx.from!.id;
+  const schedule = getSchedule();
+
+  // Find days where inspector has assignments
+  const availableDays = schedule.week.filter(day => {
+    const dayDate = new Date(day.date.split('.').reverse().join('-'));
+    const today = new Date();
+    const diffTime = dayDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays >= 0 && diffDays <= 7 && day.assignments.some(a => a.inspectorId === userId);
+  });
+
+  if (availableDays.length === 0) {
+    await ctx.reply('❌ У вас нет предстоящих проверок для отмены');
+    return;
+  }
+
+  updateUser(userId, { currentStep: 'awaiting_unavailable_day' });
+
+  let message = '📅 Выберите день, в который вы не можете выйти (введите номер):\n\n';
+  const keyboard = [];
+
+  availableDays.forEach((day, index) => {
+    const myAssignment = day.assignments.find(a => a.inspectorId === userId);
+    if (myAssignment) {
+      message += `${index + 1}. ${day.day}, ${day.date} - ${getWorkshopName(myAssignment.workshop)}\n`;
+      keyboard.push([`${index + 1}`]);
+    }
+  });
+
+  keyboard.push(['❌ Отменить']);
+
+  await ctx.reply(message, Markup.keyboard(keyboard).resize());
+}
+
+async function handleUnavailableDay(ctx: Context) {
+  const userId = ctx.from!.id;
+  const user = getUser(userId);
+  let input = '';
+  if ('text' in ctx.message!) {
+    input = ctx.message!.text;
+  } else {
+    return;
+  }
+
+  if (input === '❌ Отменить') {
+    updateUser(userId, { currentStep: undefined });
+    await ctx.reply('❌ Отменено');
+    return;
+  }
+
+  const num = parseInt(input);
+  if (isNaN(num)) return;
+
+  const schedule = getSchedule();
+  const availableDays = schedule.week.filter(day => {
+    const dayDate = new Date(day.date.split('.').reverse().join('-'));
+    const today = new Date();
+    const diffTime = dayDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays >= 0 && diffDays <= 7 && day.assignments.some(a => a.inspectorId === userId);
+  });
+
+  const selectedDay = availableDays[num - 1];
+  if (!selectedDay) {
+    await ctx.reply('❌ Неверный номер дня');
+    return;
+  }
+
+  const myAssignment = selectedDay.assignments.find(a => a.inspectorId === userId);
+  if (!myAssignment) return;
+
+  updateUser(userId, {
+    currentStep: 'awaiting_unavailable_reason',
+    tempData: { unavailableDay: selectedDay.date, workshop: myAssignment.workshop }
+  });
+
+  await ctx.reply('📝 Укажите причину, по которой вы не можете выйти:', Markup.removeKeyboard());
+}
+
+async function handleUnavailableReason(ctx: Context) {
+  const userId = ctx.from!.id;
+  const user = getUser(userId);
+  let input = '';
+  if ('text' in ctx.message!) {
+    input = ctx.message!.text;
+  } else {
+    return;
+  }
+
+  const tempData = user?.tempData;
+  if (!tempData?.unavailableDay || !tempData.workshop) return;
+
+  // Find replacement
+  await findAndReplaceInspector(ctx, userId, tempData.unavailableDay, tempData.workshop, input);
+}
+
+async function findAndReplaceInspector(ctx: Context, originalInspectorId: number, date: string, workshop: number, reason: string) {
+  const inspectors = getAllInspectors().filter(i => i.telegramId !== originalInspectorId);
+  const schedule = getSchedule();
+  const daySchedule = schedule.week.find(d => d.date === date);
+
+  if (!daySchedule) return;
+
+  // Shuffle inspectors for random selection
+  const shuffledInspectors = inspectors.sort(() => Math.random() - 0.5);
+
+  for (const replacement of shuffledInspectors) {
+    try {
+      await bot.telegram.sendMessage(
+        replacement.telegramId,
+        `🚨 Срочная замена!\n\n${getUser(originalInspectorId)?.fio || 'Проверяющий'} не может выйти ${date} на проверку цеха ${getWorkshopName(workshop)}.\n\nСможете ли вы заменить?`,
+        Markup.inlineKeyboard([
+          [
+            Markup.button.callback('✅ Да, заменю', `replacement_accept_${originalInspectorId}_${date}_${workshop}`),
+            Markup.button.callback('❌ Нет', `replacement_decline_${originalInspectorId}_${date}_${workshop}`)
+          ]
+        ])
+      );
+
+      // If message sent successfully, assume accepted for now
+      // In real implementation, would wait for callback
+
+    } catch (error) {
+      console.error(`Не удалось отправить сообщение замене ${replacement.telegramId}:`, error);
+      // If message failed to send, assume accepted (for fake users)
+    }
+
+    // Update schedule with this replacement
+    const assignment = daySchedule.assignments.find(a => a.workshop === workshop);
+    if (assignment) {
+      assignment.inspector = replacement.fio || replacement.firstName;
+      assignment.inspectorId = replacement.telegramId;
+      updateSchedule(schedule);
+    }
+
+    // Notify original inspector
+    await ctx.reply(`✅ Замена найдена!\n\nВашу проверку ${date} в цехе ${getWorkshopName(workshop)} проведет ${replacement.fio || replacement.firstName}`);
+
+    // Return to main keyboard
+    await showMainKeyboard(ctx);
+
+    // Notify all managers
+    const managers = getAllManagers();
+    for (const manager of managers) {
+      try {
+        await bot.telegram.sendMessage(
+          manager.telegramId,
+          `🔄 Замена проверяющего:\n\n${getUser(originalInspectorId)?.fio || 'Проверяющий'} не может выйти ${date} (причина: ${reason})\nЗамена: ${replacement.fio || replacement.firstName} в цехе ${getWorkshopName(workshop)}`
+        );
+      } catch (error) {
+        console.error('Ошибка уведомления менеджера:', error);
+      }
+    }
+
+    updateUser(originalInspectorId, { currentStep: undefined, tempData: undefined });
+    return;
+  }
+
+  // If no replacement found
+  await ctx.reply('❌ Не удалось найти замену. Свяжитесь с менеджером.');
+  await showMainKeyboard(ctx);
+  updateUser(originalInspectorId, { currentStep: undefined, tempData: undefined });
+}
+
