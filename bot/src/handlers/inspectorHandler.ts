@@ -1,5 +1,5 @@
 import { Context, Markup } from 'telegraf';
-import { getUser, updateUser, getSchedule, updateSchedule, getSupervisorByWorkshop } from '../utils/database';
+import { getUser, updateUser, getSchedule, updateSchedule, getSupervisorByWorkshop, loadChecklist, getInspection, saveInspection, generateInspectionReport } from '../utils/database';
 import { MESSAGES, getWorkshopName } from '../config/messages';
 import { bot } from '../index';
 
@@ -37,15 +37,7 @@ export async function handleInspectorFlow(ctx: Context) {
 
   // Начать проверку
   if (input === '📸 Начать проверку') {
-    await ctx.reply(
-      '📸 Откройте мини-приложение для фотографирования:',
-      Markup.inlineKeyboard([
-        Markup.button.webApp(
-          '📸 Сделать фото приборов',
-          'https://comfort-pick-clone-ensuring.trycloudflare.com'
-        )
-      ])
-    );
+    await startInspection(ctx);
     return;
   }
 
@@ -64,6 +56,18 @@ export async function handleInspectorFlow(ctx: Context) {
   // Обработка callback кнопок
   if (ctx.callbackQuery) {
     await handleInspectorCallback(ctx);
+    return;
+  }
+
+  // Обработка фотографий нарушения
+  if (user.currentStep === 'awaiting_photos') {
+    // Photos handled in bot.on('photo')
+    return;
+  }
+
+  // Обработка комментария
+  if (user.currentStep === 'awaiting_comment') {
+    await handleComment(ctx);
     return;
   }
 }
@@ -260,6 +264,39 @@ async function handleTimeInput(ctx: Context) {
   }
 }
 
+async function startInspection(ctx: Context) {
+  const userId = ctx.from!.id;
+  const user = getUser(userId);
+  if (!user) return;
+
+  const schedule = getSchedule();
+  const today = new Date().toLocaleDateString('ru-RU');
+  const todaySchedule = schedule.week.find(day => day.date === today);
+
+  if (!todaySchedule) {
+    await ctx.reply('❌ Сегодня нет заданий в расписании');
+    return;
+  }
+
+  const myAssignment = todaySchedule.assignments.find(a => a.inspectorId === userId);
+
+  if (!myAssignment) {
+    await ctx.reply('❌ Сегодня у вас нет назначенных проверок');
+    return;
+  }
+
+  // Confirm workshop
+  await ctx.reply(
+    `🏭 Проверить цех ${getWorkshopName(myAssignment.workshop)}?`,
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback('✅ Да', `start_inspection_${myAssignment.workshop}`),
+        Markup.button.callback('❌ Нет', 'cancel_inspection')
+      ]
+    ])
+  );
+}
+
 async function handleInspectorCallback(ctx: Context) {
   const callbackQuery = ctx.callbackQuery!;
   const userId = ctx.from!.id;
@@ -270,6 +307,48 @@ async function handleInspectorCallback(ctx: Context) {
 
   const data = callbackQuery.data;
   const schedule = getSchedule();
+
+  // Start inspection confirmation
+  if (data.startsWith('start_inspection_')) {
+    const workshop = parseInt(data.split('_')[2]);
+    const questions = loadChecklist();
+    const date = new Date().toLocaleDateString('ru-RU');
+
+    updateUser(userId, {
+      currentStep: 'inspecting',
+      tempData: {
+        workshop,
+        currentQuestion: 0,
+        answers: [],
+        date
+      }
+    });
+
+    await askQuestion(ctx, questions[0]);
+    await ctx.answerCbQuery();
+    return;
+  }
+
+  if (data === 'cancel_inspection') {
+    await ctx.editMessageText('❌ Проверка отменена');
+    await ctx.answerCbQuery();
+    return;
+  }
+
+  // Question answers
+  if (data.startsWith('complies_')) {
+    const questionId = data.split('_')[1];
+    await handleAnswer(ctx, questionId, true);
+    await ctx.answerCbQuery();
+    return;
+  }
+
+  if (data.startsWith('non_complies_')) {
+    const questionId = data.split('_')[1];
+    await handleNonCompliance(ctx, questionId);
+    await ctx.answerCbQuery();
+    return;
+  }
 
   // Подтверждение времени
   if (data.startsWith('confirm_time_')) {
@@ -344,4 +423,145 @@ async function handleInspectorCallback(ctx: Context) {
     await ctx.answerCbQuery('❌ Время отклонено');
     return;
   }
+}
+
+async function askQuestion(ctx: Context, question: any) {
+  await ctx.reply(
+    `❓ ${question.criterion}`,
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback('✅ Соответствует', `complies_${question.id}`),
+        Markup.button.callback('❌ Не соответствует', `non_complies_${question.id}`)
+      ]
+    ])
+  );
+}
+
+async function handleAnswer(ctx: Context, questionId: string, complies: boolean) {
+  const userId = ctx.from!.id;
+  const user = getUser(userId);
+  if (!user || !user.tempData) return;
+
+  const answers = user.tempData.answers || [];
+  answers.push({ questionId, complies });
+
+  const questions = loadChecklist();
+  const currentQuestion = user.tempData.currentQuestion + 1;
+
+  if (currentQuestion < questions.length) {
+    updateUser(userId, {
+      tempData: { ...user.tempData, answers, currentQuestion }
+    });
+    await askQuestion(ctx, questions[currentQuestion]);
+  } else {
+    // Finish inspection
+    await finishInspection(ctx, answers);
+  }
+}
+
+async function handleNonCompliance(ctx: Context, questionId: string) {
+  const userId = ctx.from!.id;
+  const user = getUser(userId);
+  if (!user) return;
+
+  const answers = user.tempData.answers || [];
+  answers.push({ questionId, complies: false, photos: [], comment: '' });
+
+  // Send mini app link
+  await ctx.reply(
+    '📸 Зафиксируйте нарушение с помощью мини-приложения:',
+    Markup.inlineKeyboard([
+      Markup.button.webApp(
+        '📸 Сделать фото нарушения',
+        'https://solar-athletics-nested-advertisements.trycloudflare.com'
+      )
+    ])
+  );
+
+  updateUser(userId, {
+    currentStep: 'awaiting_photos',
+    tempData: {
+      ...user.tempData,
+      answers,
+      pendingQuestion: questionId,
+      photos: [],
+      commentAsked: false,
+      attempt: 1
+    }
+  });
+}
+
+async function handleComment(ctx: Context) {
+  const userId = ctx.from!.id;
+  const user = getUser(userId);
+  if (!user || !user.tempData) return;
+
+  let input = '';
+  if ('text' in ctx.message!) {
+    input = ctx.message!.text;
+  } else {
+    return;
+  }
+
+  const answers = user.tempData.answers || [];
+  const pendingQuestion = user.tempData.pendingQuestion;
+  const answer = answers.find((a: any) => a.questionId === pendingQuestion);
+  if (answer) {
+    const aiComment = user.tempData.aiComment ? `\nAI: ${user.tempData.aiComment}` : '';
+    answer.comment = input + aiComment;
+  }
+
+  // Go to next question
+  const questions = loadChecklist();
+  const currentQuestion = user.tempData.currentQuestion + 1;
+
+  if (currentQuestion < questions.length) {
+    updateUser(userId, {
+      currentStep: 'inspecting',
+      tempData: { ...user.tempData, answers, currentQuestion, pendingQuestion: undefined }
+    });
+    await askQuestion(ctx, questions[currentQuestion]);
+  } else {
+    await finishInspection(ctx, answers);
+  }
+}
+
+async function finishInspection(ctx: Context, answers: any[]) {
+  const userId = ctx.from!.id;
+  const user = getUser(userId);
+  if (!user || !user.tempData) return;
+
+  const questions = loadChecklist();
+  const sectionScores: { [key: string]: number } = {};
+  const sections = [...new Set(questions.map(q => q.section))];
+
+  sections.forEach(section => {
+    const sectionQuestions = questions.filter(q => q.section === section);
+    const sectionAnswers = answers.filter(a => sectionQuestions.some(q => q.id === a.questionId));
+    const score = sectionAnswers.filter(a => a.complies).length;
+    sectionScores[section] = score;
+  });
+
+  const totalSections = sections.length;
+  const finalScore = totalSections > 0 ? Object.values(sectionScores).reduce((a, b) => a + b, 0) / totalSections : 0;
+
+  const inspection: any = {
+    inspectorId: userId,
+    workshop: user.tempData.workshop,
+    date: user.tempData.date,
+    answers,
+    sectionScores,
+    finalScore
+  };
+
+  saveInspection(inspection);
+
+  // Generate and send report
+  const reportBuffer = generateInspectionReport(inspection);
+  await ctx.replyWithDocument(
+    { source: reportBuffer, filename: `report_${user.tempData.date}.xlsx` },
+    { caption: '✅ Отчет по проверке готов!' }
+  );
+
+  updateUser(userId, { currentStep: undefined, tempData: undefined });
 }

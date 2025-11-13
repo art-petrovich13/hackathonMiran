@@ -3,14 +3,14 @@
     "telegramId": 1024422309,
     "firstName": "Artem",
     "fio": "Петрович Артем Сергеевич",
-    "role": "supervisor",
-    "workshop": 1
+    "role": "inspector"
   },
   {
     "telegramId": 1024252830,
     "firstName": "Орешек💖",
     "fio": "Капкович Арина Андреевна",
-    "role": "manager"
+    "role": "supervisor",
+    "workshop": 4
   },
   {
     "telegramId": 1258151845,
@@ -91,7 +91,7 @@
     "firstName": "",
     "fio": "Морозова Елена Игоревна",
     "role": "supervisor",
-    "workshop": 4
+    "workshop": 1
   },
   {
     "telegramId": 14,
