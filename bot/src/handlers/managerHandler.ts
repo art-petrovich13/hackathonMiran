@@ -9,7 +9,9 @@ import {
   generateMonthSchedule,
   getAllInspectors,
   getAllManagers,
-  getAllSupervisors
+  getAllSupervisors,
+  generateInspectionReport,
+  getLatestInspection
 } from '../utils/database';
 import { MESSAGES, getWorkshopName, WORKSHOPS, ROLES } from '../config/messages';
 import { bot } from '../index';
@@ -45,9 +47,41 @@ export async function handleManagerFlow(ctx: Context) {
     return;
   }
 
-  // Отчеты (пока ничего)
+  // Отчеты
   if (input === '📊 Отчеты') {
-    await ctx.reply('📊 Отчеты пока в разработке');
+    await ctx.reply(
+      'Выберите тип отчета:',
+      Markup.keyboard([
+        ['📊 Отчет за сегодня', '📈 Аналитика'],
+        ['⬅️ Назад']
+      ]).resize()
+    );
+    return;
+  }
+
+  // Отчет за сегодня
+  if (input === '📊 Отчет за сегодня') {
+    await sendTodayReport(ctx);
+    return;
+  }
+
+  // Аналитика
+  if (input === '📈 Аналитика') {
+    await ctx.reply(
+      '📈 Открыть аналитику:',
+      Markup.inlineKeyboard([
+        Markup.button.webApp(
+          '📈 Просмотр аналитики',
+          'https://solar-athletics-nested-advertisements.trycloudflare.com/dashboards'
+        )
+      ])
+    );
+    return;
+  }
+
+  // Назад
+  if (input === '⬅️ Назад') {
+    await showMainMenu(ctx);
     return;
   }
 
@@ -336,6 +370,30 @@ async function approveSchedule(ctx: Context) {
   }
 
   await ctx.reply(MESSAGES.scheduleApproved);
+}
+
+async function sendTodayReport(ctx: Context) {
+  const inspection = getLatestInspection();
+  if (!inspection) {
+    await ctx.reply('❌ Отчеты за сегодня не найдены');
+    return;
+  }
+
+  const reportBuffer = generateInspectionReport(inspection);
+  await ctx.replyWithDocument(
+    { source: reportBuffer, filename: `inspection_report_${inspection.date}.xlsx` },
+    { caption: `📊 Отчет по проверке цеха ${inspection.workshop} от ${inspection.date}` }
+  );
+}
+
+async function showMainMenu(ctx: Context) {
+  await ctx.reply(
+    MESSAGES.managerMenu,
+    Markup.keyboard([
+      ['📅 Расписание', '👥 Сотрудники'],
+      ['📊 Отчеты']
+    ]).resize()
+  );
 }
 
 async function showScheduleMenu(ctx: Context) {

@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import * as XLSX from 'xlsx';
 
 const __dirname = path.dirname(__filename);
 
@@ -35,6 +36,28 @@ export interface Schedule {
   week: ScheduleDay[];
   month: ScheduleDay[];
   currentWeekApproved: boolean;
+}
+
+export interface Question {
+  id: string;
+  criterion: string;
+  section: string;
+}
+
+export interface InspectionAnswer {
+  questionId: string;
+  complies: boolean;
+  photos?: string[];
+  comment?: string;
+}
+
+export interface InspectionData {
+  inspectorId: number;
+  workshop: number;
+  date: string;
+  answers: InspectionAnswer[];
+  sectionScores: { [section: string]: number };
+  finalScore: number;
 }
 
 // Хранилище в памяти
@@ -214,6 +237,89 @@ export function generateWeekSchedule(): ScheduleDay[] {
 export function generateMonthSchedule(): ScheduleDay[] {
   // Now returns the same 2 weeks schedule
   return generateWeekSchedule();
+}
+
+// --- РАБОТА С ЧЕК-ЛИСТОМ ---
+
+export function loadChecklist(): Question[] {
+  const workbook = XLSX.readFile(path.join(DATA_DIR, 'table1.xlsx'));
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  const data = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as any[][];
+
+  const questions: Question[] = [];
+  let currentSection = '';
+
+  for (const row of data) {
+    if (row[0] && typeof row[0] === 'string' && /^[А-Я]/.test(row[0])) {
+      // Section header
+      currentSection = row[0].split(' ')[0]; // Take first letter
+    } else if (row[0] && typeof row[0] === 'number' && row[1]) {
+      // Question row
+      questions.push({
+        id: `${currentSection}${row[0]}`,
+        criterion: row[1],
+        section: currentSection
+      });
+    }
+  }
+
+  return questions;
+}
+
+// --- РАБОТА С ИНСПЕКЦИЯМИ ---
+
+let inspections: Map<string, InspectionData> = new Map(); // key: inspectorId_date
+
+export function getInspection(inspectorId: number, date: string): InspectionData | undefined {
+  return inspections.get(`${inspectorId}_${date}`);
+}
+
+export function saveInspection(inspection: InspectionData) {
+  inspections.set(`${inspection.inspectorId}_${inspection.date}`, inspection);
+}
+
+export function getLatestInspection(): InspectionData | undefined {
+  const inspectionsArray = Array.from(inspections.values());
+  if (inspectionsArray.length === 0) return undefined;
+  // Sort by date descending
+  inspectionsArray.sort((a, b) => new Date(b.date.split('.').reverse().join('-')).getTime() - new Date(a.date.split('.').reverse().join('-')).getTime());
+  return inspectionsArray[0];
+}
+
+export function generateInspectionReport(inspection: InspectionData): Buffer {
+  const workbook = XLSX.readFile(path.join(DATA_DIR, 'table1.xlsx'));
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  const data = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as any[][];
+
+  // Create a map of questionId to answer
+  const answerMap = new Map(inspection.answers.map(a => [a.questionId, a]));
+
+  let currentSection = '';
+  // Update the data
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    if (row[0] && typeof row[0] === 'string' && /^[А-Я]/.test(row[0])) {
+      // Section header
+      currentSection = row[0].split(' ')[0];
+    } else if (row[0] && typeof row[0] === 'number' && row[1] && typeof row[1] === 'string') {
+      // Question row
+      const questionId = `${currentSection}${row[0]}`;
+      const answer = answerMap.get(questionId);
+      if (answer) {
+        if (answer.complies) {
+          row[2] = 1; // соответствует
+        } else {
+          row[3] = 0; // не соответствует
+          row[4] = answer.comment || '';
+        }
+      }
+    }
+    // Don't overwrite sum and final rows, let formulas calculate
+  }
+
+  // Write back
+  XLSX.utils.sheet_add_json(sheet, data, { skipHeader: true });
+  return XLSX.write(workbook, { type: 'buffer' });
 }
 
 // Инициализация при загрузке модуля
