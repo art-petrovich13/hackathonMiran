@@ -5,33 +5,33 @@
       "day": "Понедельник",
       "assignments": [
         {
-          "workshop": 3,
-          "inspector": "Петров Алекс Иванович",
-          "inspectorId": 0,
-          "status": "pending"
-        },
-        {
           "workshop": 1,
-          "inspector": "Краснова Ирина Анатольевна",
-          "inspectorId": 2,
-          "status": "pending"
-        },
-        {
-          "workshop": 2,
           "inspector": "Белый Максим Сергеевич",
           "inspectorId": 3,
           "status": "pending"
         },
         {
           "workshop": 4,
-          "inspector": "Галат Ксения Дмитриевна",
-          "inspectorId": 1258151845,
+          "inspector": "Белова Екатерина Сергеевна",
+          "inspectorId": 7,
           "status": "pending"
         },
         {
           "workshop": 5,
-          "inspector": "Петрович Артем Сергеевич",
-          "inspectorId": 1024422309,
+          "inspector": "Иванова Мария Игоревна",
+          "inspectorId": 1,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Краснова Ирина Анатольевна",
+          "inspectorId": 2,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петров Алекс Иванович",
+          "inspectorId": 0,
           "status": "pending"
         }
       ]
@@ -42,8 +42,8 @@
       "assignments": [
         {
           "workshop": 1,
-          "inspector": "Галат Ксения Дмитриевна",
-          "inspectorId": 1258151845,
+          "inspector": "Петров Алекс Иванович",
+          "inspectorId": 0,
           "status": "pending"
         },
         {
@@ -54,8 +54,8 @@
         },
         {
           "workshop": 3,
-          "inspector": "Краснова Ирина Анатольевна",
-          "inspectorId": 2,
+          "inspector": "Белова Екатерина Сергеевна",
+          "inspectorId": 7,
           "status": "pending"
         },
         {
@@ -66,8 +66,8 @@
         },
         {
           "workshop": 5,
-          "inspector": "Петров Алекс Иванович",
-          "inspectorId": 0,
+          "inspector": "Краснова Ирина Анатольевна",
+          "inspectorId": 2,
           "status": "pending"
         }
       ]
@@ -78,32 +78,32 @@
       "assignments": [
         {
           "workshop": 1,
-          "inspector": "Краснова Ирина Анатольевна",
-          "inspectorId": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
           "status": "pending"
         },
         {
           "workshop": 2,
+          "inspector": "Белый Максим Сергеевич",
+          "inspectorId": 3,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
           "inspector": "Белова Екатерина Сергеевна",
           "inspectorId": 7,
           "status": "pending"
         },
         {
           "workshop": 3,
-          "inspector": "Петрович Артем Сергеевич",
-          "inspectorId": 1024422309,
-          "status": "pending"
-        },
-        {
-          "workshop": 5,
-          "inspector": "Иванова Мария Игоревна",
-          "inspectorId": 1,
+          "inspector": "Краснова Ирина Анатольевна",
+          "inspectorId": 2,
           "status": "pending"
         },
         {
           "workshop": 4,
-          "inspector": "Галат Ксения Дмитриевна",
-          "inspectorId": 1258151845,
+          "inspector": "Черный Егор Сергеевич",
+          "inspectorId": 6,
           "status": "pending"
         }
       ]
@@ -113,24 +113,6 @@
       "day": "Четверг",
       "assignments": [
         {
-          "workshop": 5,
-          "inspector": "Черный Егор Сергеевич",
-          "inspectorId": 6,
-          "status": "pending"
-        },
-        {
-          "workshop": 1,
-          "inspector": "Иванова Мария Игоревна",
-          "inspectorId": 1,
-          "status": "pending"
-        },
-        {
-          "workshop": 2,
-          "inspector": "Галат Ксения Дмитриевна",
-          "inspectorId": 1258151845,
-          "status": "pending"
-        },
-        {
           "workshop": 4,
           "inspector": "Петрович Артем Сергеевич",
           "inspectorId": 1024422309,
@@ -138,6 +120,24 @@
         },
         {
           "workshop": 3,
+          "inspector": "Петров Алекс Иванович",
+          "inspectorId": 0,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Черный Егор Сергеевич",
+          "inspectorId": 6,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Иванова Мария Игоревна",
+          "inspectorId": 1,
+          "status": "pending"
+        },
+        {
+          "workshop": 1,
           "inspector": "Краснова Ирина Анатольевна",
           "inspectorId": 2,
           "status": "pending"
@@ -149,33 +149,33 @@
       "day": "Пятница",
       "assignments": [
         {
-          "workshop": 1,
-          "inspector": "Петрович Артем Сергеевич",
-          "inspectorId": 1024422309,
-          "status": "pending"
-        },
-        {
-          "workshop": 2,
-          "inspector": "Краснова Ирина Анатольевна",
-          "inspectorId": 2,
+          "workshop": 4,
+          "inspector": "Белова Екатерина Сергеевна",
+          "inspectorId": 7,
           "status": "pending"
         },
         {
           "workshop": 3,
-          "inspector": "Галат Ксения Дмитриевна",
-          "inspectorId": 1258151845,
+          "inspector": "Иванова Мария Игоревна",
+          "inspectorId": 1,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петров Алекс Иванович",
+          "inspectorId": 0,
+          "status": "pending"
+        },
+        {
+          "workshop": 1,
+          "inspector": "Черный Егор Сергеевич",
+          "inspectorId": 6,
           "status": "pending"
         },
         {
           "workshop": 5,
-          "inspector": "Белый Максим Сергеевич",
-          "inspectorId": 3,
-          "status": "pending"
-        },
-        {
-          "workshop": 4,
-          "inspector": "Петров Алекс Иванович",
-          "inspectorId": 0,
+          "inspector": "Краснова Ирина Анатольевна",
+          "inspectorId": 2,
           "status": "pending"
         }
       ]
@@ -185,33 +185,33 @@
       "day": "Понедельник",
       "assignments": [
         {
-          "workshop": 3,
-          "inspector": "Белый Максим Сергеевич",
-          "inspectorId": 3,
-          "status": "pending"
-        },
-        {
-          "workshop": 2,
-          "inspector": "Галат Ксения Дмитриевна",
-          "inspectorId": 1258151845,
-          "status": "pending"
-        },
-        {
-          "workshop": 5,
-          "inspector": "Краснова Ирина Анатольевна",
-          "inspectorId": 2,
+          "workshop": 4,
+          "inspector": "Петров Алекс Иванович",
+          "inspectorId": 0,
           "status": "pending"
         },
         {
           "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
           "inspector": "Черный Егор Сергеевич",
           "inspectorId": 6,
           "status": "pending"
         },
         {
-          "workshop": 4,
-          "inspector": "Петрович Артем Сергеевич",
-          "inspectorId": 1024422309,
+          "workshop": 5,
+          "inspector": "Иванова Мария Игоревна",
+          "inspectorId": 1,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Краснова Ирина Анатольевна",
+          "inspectorId": 2,
           "status": "pending"
         }
       ]
@@ -221,33 +221,33 @@
       "day": "Вторник",
       "assignments": [
         {
-          "workshop": 3,
-          "inspector": "Петров Алекс Иванович",
-          "inspectorId": 0,
-          "status": "pending"
-        },
-        {
-          "workshop": 2,
-          "inspector": "Белый Максим Сергеевич",
-          "inspectorId": 3,
-          "status": "pending"
-        },
-        {
-          "workshop": 1,
+          "workshop": 4,
           "inspector": "Петрович Артем Сергеевич",
           "inspectorId": 1024422309,
           "status": "pending"
         },
         {
-          "workshop": 5,
-          "inspector": "Галат Ксения Дмитриевна",
-          "inspectorId": 1258151845,
+          "workshop": 3,
+          "inspector": "Иванова Мария Игоревна",
+          "inspectorId": 1,
           "status": "pending"
         },
         {
-          "workshop": 4,
+          "workshop": 2,
+          "inspector": "Краснова Ирина Анатольевна",
+          "inspectorId": 2,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
           "inspector": "Черный Егор Сергеевич",
           "inspectorId": 6,
+          "status": "pending"
+        },
+        {
+          "workshop": 1,
+          "inspector": "Белый Максим Сергеевич",
+          "inspectorId": 3,
           "status": "pending"
         }
       ]
@@ -257,21 +257,21 @@
       "day": "Среда",
       "assignments": [
         {
-          "workshop": 4,
+          "workshop": 2,
           "inspector": "Иванова Мария Игоревна",
           "inspectorId": 1,
           "status": "pending"
         },
         {
-          "workshop": 3,
-          "inspector": "Галат Ксения Дмитриевна",
-          "inspectorId": 1258151845,
+          "workshop": 5,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
           "status": "pending"
         },
         {
-          "workshop": 2,
-          "inspector": "Черный Егор Сергеевич",
-          "inspectorId": 6,
+          "workshop": 4,
+          "inspector": "Краснова Ирина Анатольевна",
+          "inspectorId": 2,
           "status": "pending"
         },
         {
@@ -281,9 +281,9 @@
           "status": "pending"
         },
         {
-          "workshop": 5,
-          "inspector": "Петрович Артем Сергеевич",
-          "inspectorId": 1024422309,
+          "workshop": 3,
+          "inspector": "Петров Алекс Иванович",
+          "inspectorId": 0,
           "status": "pending"
         }
       ]
@@ -293,33 +293,33 @@
       "day": "Четверг",
       "assignments": [
         {
-          "workshop": 1,
-          "inspector": "Петрович Артем Сергеевич",
-          "inspectorId": 1024422309,
+          "workshop": 3,
+          "inspector": "Краснова Ирина Анатольевна",
+          "inspectorId": 2,
           "status": "pending"
         },
         {
           "workshop": 4,
-          "inspector": "Белова Екатерина Сергеевна",
-          "inspectorId": 7,
-          "status": "pending"
-        },
-        {
-          "workshop": 2,
-          "inspector": "Галат Ксения Дмитриевна",
-          "inspectorId": 1258151845,
-          "status": "pending"
-        },
-        {
-          "workshop": 5,
           "inspector": "Петров Алекс Иванович",
           "inspectorId": 0,
           "status": "pending"
         },
         {
-          "workshop": 3,
-          "inspector": "Краснова Ирина Анатольевна",
-          "inspectorId": 2,
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Белый Максим Сергеевич",
+          "inspectorId": 3,
+          "status": "pending"
+        },
+        {
+          "workshop": 1,
+          "inspector": "Черный Егор Сергеевич",
+          "inspectorId": 6,
           "status": "pending"
         }
       ]
@@ -329,31 +329,31 @@
       "day": "Пятница",
       "assignments": [
         {
-          "workshop": 3,
-          "inspector": "Черный Егор Сергеевич",
-          "inspectorId": 6,
-          "status": "pending"
-        },
-        {
           "workshop": 2,
           "inspector": "Краснова Ирина Анатольевна",
           "inspectorId": 2,
           "status": "pending"
         },
         {
-          "workshop": 1,
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
+          "inspector": "Белова Екатерина Сергеевна",
+          "inspectorId": 7,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
           "inspector": "Белый Максим Сергеевич",
           "inspectorId": 3,
           "status": "pending"
         },
         {
-          "workshop": 5,
-          "inspector": "Иванова Мария Игоревна",
-          "inspectorId": 1,
-          "status": "pending"
-        },
-        {
-          "workshop": 4,
+          "workshop": 1,
           "inspector": "Петров Алекс Иванович",
           "inspectorId": 0,
           "status": "pending"
@@ -367,33 +367,33 @@
       "day": "Понедельник",
       "assignments": [
         {
+          "workshop": 4,
+          "inspector": "Краснова Ирина Анатольевна",
+          "inspectorId": 2,
+          "status": "pending"
+        },
+        {
           "workshop": 5,
+          "inspector": "Иванова Мария Игоревна",
+          "inspectorId": 1,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 1,
           "inspector": "Белый Максим Сергеевич",
           "inspectorId": 3,
           "status": "pending"
         },
         {
-          "workshop": 4,
+          "workshop": 3,
           "inspector": "Белова Екатерина Сергеевна",
           "inspectorId": 7,
-          "status": "pending"
-        },
-        {
-          "workshop": 3,
-          "inspector": "Петров Алекс Иванович",
-          "inspectorId": 0,
-          "status": "pending"
-        },
-        {
-          "workshop": 2,
-          "inspector": "Галат Ксения Дмитриевна",
-          "inspectorId": 1258151845,
-          "status": "pending"
-        },
-        {
-          "workshop": 1,
-          "inspector": "Краснова Ирина Анатольевна",
-          "inspectorId": 2,
           "status": "pending"
         }
       ]
@@ -403,33 +403,33 @@
       "day": "Вторник",
       "assignments": [
         {
-          "workshop": 4,
-          "inspector": "Петрович Артем Сергеевич",
-          "inspectorId": 1024422309,
+          "workshop": 3,
+          "inspector": "Краснова Ирина Анатольевна",
+          "inspectorId": 2,
           "status": "pending"
         },
         {
           "workshop": 2,
-          "inspector": "Белова Екатерина Сергеевна",
-          "inspectorId": 7,
+          "inspector": "Иванова Мария Игоревна",
+          "inspectorId": 1,
           "status": "pending"
         },
         {
-          "workshop": 3,
-          "inspector": "Белый Максим Сергеевич",
-          "inspectorId": 3,
-          "status": "pending"
-        },
-        {
-          "workshop": 1,
+          "workshop": 5,
           "inspector": "Черный Егор Сергеевич",
           "inspectorId": 6,
           "status": "pending"
         },
         {
-          "workshop": 5,
-          "inspector": "Краснова Ирина Анатольевна",
-          "inspectorId": 2,
+          "workshop": 1,
+          "inspector": "Белова Екатерина Сергеевна",
+          "inspectorId": 7,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Белый Максим Сергеевич",
+          "inspectorId": 3,
           "status": "pending"
         }
       ]
@@ -439,31 +439,31 @@
       "day": "Среда",
       "assignments": [
         {
-          "workshop": 5,
-          "inspector": "Белова Екатерина Сергеевна",
-          "inspectorId": 7,
-          "status": "pending"
-        },
-        {
-          "workshop": 4,
-          "inspector": "Краснова Ирина Анатольевна",
-          "inspectorId": 2,
-          "status": "pending"
-        },
-        {
           "workshop": 3,
-          "inspector": "Петрович Артем Сергеевич",
-          "inspectorId": 1024422309,
-          "status": "pending"
-        },
-        {
-          "workshop": 2,
           "inspector": "Белый Максим Сергеевич",
           "inspectorId": 3,
           "status": "pending"
         },
         {
+          "workshop": 2,
+          "inspector": "Краснова Ирина Анатольевна",
+          "inspectorId": 2,
+          "status": "pending"
+        },
+        {
           "workshop": 1,
+          "inspector": "Иванова Мария Игоревна",
+          "inspectorId": 1,
+          "status": "pending"
+        },
+        {
+          "workshop": 4,
+          "inspector": "Белова Екатерина Сергеевна",
+          "inspectorId": 7,
+          "status": "pending"
+        },
+        {
+          "workshop": 5,
           "inspector": "Петров Алекс Иванович",
           "inspectorId": 0,
           "status": "pending"
@@ -475,33 +475,33 @@
       "day": "Четверг",
       "assignments": [
         {
-          "workshop": 4,
+          "workshop": 1,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
           "inspector": "Иванова Мария Игоревна",
           "inspectorId": 1,
           "status": "pending"
         },
         {
           "workshop": 3,
-          "inspector": "Петров Алекс Иванович",
-          "inspectorId": 0,
+          "inspector": "Черный Егор Сергеевич",
+          "inspectorId": 6,
           "status": "pending"
         },
         {
           "workshop": 5,
-          "inspector": "Белый Максим Сергеевич",
-          "inspectorId": 3,
-          "status": "pending"
-        },
-        {
-          "workshop": 2,
           "inspector": "Белова Екатерина Сергеевна",
           "inspectorId": 7,
           "status": "pending"
         },
         {
-          "workshop": 1,
-          "inspector": "Галат Ксения Дмитриевна",
-          "inspectorId": 1258151845,
+          "workshop": 4,
+          "inspector": "Краснова Ирина Анатольевна",
+          "inspectorId": 2,
           "status": "pending"
         }
       ]
@@ -511,33 +511,33 @@
       "day": "Пятница",
       "assignments": [
         {
-          "workshop": 3,
-          "inspector": "Белова Екатерина Сергеевна",
-          "inspectorId": 7,
+          "workshop": 2,
+          "inspector": "Краснова Ирина Анатольевна",
+          "inspectorId": 2,
           "status": "pending"
         },
         {
-          "workshop": 5,
+          "workshop": 4,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
+          "status": "pending"
+        },
+        {
+          "workshop": 1,
+          "inspector": "Черный Егор Сергеевич",
+          "inspectorId": 6,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
           "inspector": "Петров Алекс Иванович",
           "inspectorId": 0,
           "status": "pending"
         },
         {
-          "workshop": 4,
-          "inspector": "Белый Максим Сергеевич",
-          "inspectorId": 3,
-          "status": "pending"
-        },
-        {
-          "workshop": 2,
-          "inspector": "Галат Ксения Дмитриевна",
-          "inspectorId": 1258151845,
-          "status": "pending"
-        },
-        {
-          "workshop": 1,
-          "inspector": "Краснова Ирина Анатольевна",
-          "inspectorId": 2,
+          "workshop": 5,
+          "inspector": "Иванова Мария Игоревна",
+          "inspectorId": 1,
           "status": "pending"
         }
       ]
@@ -547,33 +547,33 @@
       "day": "Понедельник",
       "assignments": [
         {
+          "workshop": 4,
+          "inspector": "Белова Екатерина Сергеевна",
+          "inspectorId": 7,
+          "status": "pending"
+        },
+        {
           "workshop": 3,
-          "inspector": "Галат Ксения Дмитриевна",
-          "inspectorId": 1258151845,
+          "inspector": "Петрович Артем Сергеевич",
+          "inspectorId": 1024422309,
           "status": "pending"
         },
         {
           "workshop": 1,
-          "inspector": "Белый Максим Сергеевич",
-          "inspectorId": 3,
+          "inspector": "Петров Алекс Иванович",
+          "inspectorId": 0,
           "status": "pending"
         },
         {
           "workshop": 5,
-          "inspector": "Черный Егор Сергеевич",
-          "inspectorId": 6,
-          "status": "pending"
-        },
-        {
-          "workshop": 2,
           "inspector": "Краснова Ирина Анатольевна",
           "inspectorId": 2,
           "status": "pending"
         },
         {
-          "workshop": 4,
-          "inspector": "Петрович Артем Сергеевич",
-          "inspectorId": 1024422309,
+          "workshop": 2,
+          "inspector": "Иванова Мария Игоревна",
+          "inspectorId": 1,
           "status": "pending"
         }
       ]
@@ -583,31 +583,31 @@
       "day": "Вторник",
       "assignments": [
         {
-          "workshop": 2,
-          "inspector": "Белый Максим Сергеевич",
-          "inspectorId": 3,
-          "status": "pending"
-        },
-        {
-          "workshop": 1,
+          "workshop": 5,
           "inspector": "Петрович Артем Сергеевич",
           "inspectorId": 1024422309,
           "status": "pending"
         },
         {
-          "workshop": 3,
+          "workshop": 4,
+          "inspector": "Петров Алекс Иванович",
+          "inspectorId": 0,
+          "status": "pending"
+        },
+        {
+          "workshop": 1,
+          "inspector": "Белова Екатерина Сергеевна",
+          "inspectorId": 7,
+          "status": "pending"
+        },
+        {
+          "workshop": 2,
           "inspector": "Черный Егор Сергеевич",
           "inspectorId": 6,
           "status": "pending"
         },
         {
-          "workshop": 4,
-          "inspector": "Галат Ксения Дмитриевна",
-          "inspectorId": 1258151845,
-          "status": "pending"
-        },
-        {
-          "workshop": 5,
+          "workshop": 3,
           "inspector": "Иванова Мария Игоревна",
           "inspectorId": 1,
           "status": "pending"
@@ -619,15 +619,15 @@
       "day": "Среда",
       "assignments": [
         {
-          "workshop": 2,
-          "inspector": "Галат Ксения Дмитриевна",
-          "inspectorId": 1258151845,
+          "workshop": 1,
+          "inspector": "Иванова Мария Игоревна",
+          "inspectorId": 1,
           "status": "pending"
         },
         {
-          "workshop": 1,
-          "inspector": "Краснова Ирина Анатольевна",
-          "inspectorId": 2,
+          "workshop": 2,
+          "inspector": "Белова Екатерина Сергеевна",
+          "inspectorId": 7,
           "status": "pending"
         },
         {
@@ -637,15 +637,15 @@
           "status": "pending"
         },
         {
-          "workshop": 4,
+          "workshop": 3,
           "inspector": "Петрович Артем Сергеевич",
           "inspectorId": 1024422309,
           "status": "pending"
         },
         {
-          "workshop": 3,
-          "inspector": "Иванова Мария Игоревна",
-          "inspectorId": 1,
+          "workshop": 4,
+          "inspector": "Черный Егор Сергеевич",
+          "inspectorId": 6,
           "status": "pending"
         }
       ]
@@ -655,33 +655,33 @@
       "day": "Четверг",
       "assignments": [
         {
-          "workshop": 1,
+          "workshop": 4,
           "inspector": "Иванова Мария Игоревна",
           "inspectorId": 1,
           "status": "pending"
         },
         {
           "workshop": 2,
+          "inspector": "Черный Егор Сергеевич",
+          "inspectorId": 6,
+          "status": "pending"
+        },
+        {
+          "workshop": 1,
           "inspector": "Краснова Ирина Анатольевна",
           "inspectorId": 2,
           "status": "pending"
         },
         {
-          "workshop": 3,
-          "inspector": "Петрович Артем Сергеевич",
-          "inspectorId": 1024422309,
-          "status": "pending"
-        },
-        {
-          "workshop": 4,
-          "inspector": "Белова Екатерина Сергеевна",
-          "inspectorId": 7,
-          "status": "pending"
-        },
-        {
           "workshop": 5,
-          "inspector": "Черный Егор Сергеевич",
-          "inspectorId": 6,
+          "inspector": "Петров Алекс Иванович",
+          "inspectorId": 0,
+          "status": "pending"
+        },
+        {
+          "workshop": 3,
+          "inspector": "Белый Максим Сергеевич",
+          "inspectorId": 3,
           "status": "pending"
         }
       ]
@@ -691,21 +691,21 @@
       "day": "Пятница",
       "assignments": [
         {
-          "workshop": 1,
-          "inspector": "Петрович Артем Сергеевич",
-          "inspectorId": 1024422309,
+          "workshop": 2,
+          "inspector": "Белый Максим Сергеевич",
+          "inspectorId": 3,
           "status": "pending"
         },
         {
-          "workshop": 2,
-          "inspector": "Иванова Мария Игоревна",
-          "inspectorId": 1,
+          "workshop": 4,
+          "inspector": "Краснова Ирина Анатольевна",
+          "inspectorId": 2,
           "status": "pending"
         },
         {
           "workshop": 5,
-          "inspector": "Краснова Ирина Анатольевна",
-          "inspectorId": 2,
+          "inspector": "Иванова Мария Игоревна",
+          "inspectorId": 1,
           "status": "pending"
         },
         {
@@ -715,7 +715,7 @@
           "status": "pending"
         },
         {
-          "workshop": 4,
+          "workshop": 1,
           "inspector": "Черный Егор Сергеевич",
           "inspectorId": 6,
           "status": "pending"
@@ -723,5 +723,5 @@
       ]
     }
   ],
-  "currentWeekApproved": true
+  "currentWeekApproved": false
 }

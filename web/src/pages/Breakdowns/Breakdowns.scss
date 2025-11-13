@@ -427,13 +427,13 @@
 
 .radar-chart {
   position: relative;
-  height: 300px;
+  height: 370px;
 }
 
 .radar-container {
   position: relative;
-  width: 300px;
-  height: 300px;
+  width: 250px;
+  height: 250px;
   margin: 0 auto;
 }
 
@@ -506,9 +506,8 @@
 
 .radar-center {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 130px;
+  left: 130px;
   width: 40px;
   height: 40px;
   background: rgba(255, 255, 255, 0.9);
@@ -518,6 +517,7 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
 
   .center-label {
     font-size: 10px;
@@ -1101,6 +1101,11 @@
   .radar-container {
     width: 250px;
     height: 250px;
+  }
+
+  .radar-center {
+    top: 105px;
+    left: 105px;
   }
 
   .radar-legend {

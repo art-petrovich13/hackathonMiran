@@ -51,19 +51,19 @@ export interface FacilityWithDevices extends Facility {
 export const facilities: Facility[] = [
   {
     id: 'facility-1',
-    name: 'Цех металлообработки №1',
+    name: 'Отделение раздува',
     location: 'Корпус А, Уровень 2',
     department: 'Производственный'
   },
   {
     id: 'facility-2',
-    name: 'Цех сборки и монтажа',
+    name: 'Отделение литья',
     location: 'Корпус Б, Уровень 1',
     department: 'Сборочный'
   },
   {
     id: 'facility-3',
-    name: 'Покрасочный цех',
+    name: 'Дробильное отделение',
     location: 'Корпус В, Уровень 1',
     department: 'Отделочный'
   },
@@ -81,7 +81,7 @@ export const facilities: Facility[] = [
   },
   {
     id: 'facility-6',
-    name: 'Офис',
+    name: 'Сборочный участок',
     location: 'Главный корпус, Уровень 1',
     department: 'Административный'
   }

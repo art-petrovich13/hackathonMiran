@@ -48,6 +48,11 @@ export async function handleSupervisorFlow(ctx: Context) {
 
   // Обработка callback кнопок
   if (ctx.callbackQuery) {
+    const data = (ctx.callbackQuery as any).data;
+    if (data && data.startsWith('meeting_')) {
+      await handleMeetingCallback(ctx);
+      return;
+    }
     await handleCallback(ctx);
     return;
   }
@@ -55,6 +60,12 @@ export async function handleSupervisorFlow(ctx: Context) {
   // Обработка ввода времени после отклонения
   if (user.currentStep === 'proposing_new_time') {
     await handleNewTimeProposal(ctx);
+    return;
+  }
+
+  // Обработка альтернативного времени встречи
+  if (user.currentStep === 'awaiting_alternative_time') {
+    await handleAlternativeTime(ctx);
     return;
   }
 }
@@ -239,4 +250,65 @@ async function handleNewTimeProposal(ctx: Context) {
     console.error('Ошибка отправки предложения:', error);
     await ctx.reply(MESSAGES.error);
   }
+}
+
+async function handleMeetingCallback(ctx: Context) {
+ const callbackQuery = ctx.callbackQuery!;
+ const data = (callbackQuery as any).data;
+ const userId = ctx.from!.id;
+ const user = getUser(userId);
+
+ const parts = data.split('_');
+ const action = parts[1];
+ const managerId = parseInt(parts[2]);
+
+ if (action === 'accept') {
+   // Notify manager
+   try {
+     await bot.telegram.sendMessage(managerId, `✅ ${user?.fio || user?.firstName} согласился на встречу`);
+     await ctx.editMessageText('✅ Вы согласились на встречу');
+   } catch (error) {
+     console.error('Ошибка уведомления менеджера:', error);
+   }
+ } else if (action === 'decline') {
+   // Ask for alternative time
+   updateUser(userId, { currentStep: 'awaiting_alternative_time', tempData: { managerId } });
+   await ctx.editMessageText('❌ Встреча отклонена. Предложите альтернативное время:');
+ }
+
+ await ctx.answerCbQuery();
+}
+
+async function handleAlternativeTime(ctx: Context) {
+ const userId = ctx.from!.id;
+ const user = getUser(userId);
+ let input = '';
+ if ('text' in ctx.message!) {
+   input = ctx.message!.text;
+ } else {
+   return;
+ }
+
+ const managerId = user?.tempData?.managerId;
+ if (!managerId) return;
+
+ // Send alternative proposal to manager
+ try {
+   await bot.telegram.sendMessage(
+     managerId,
+     `📅 ${user?.fio || user?.firstName} предлагает альтернативное время: ${input}`,
+     Markup.inlineKeyboard([
+       [
+         Markup.button.callback('✅ Согласен', `meeting_accept_${userId}`),
+         Markup.button.callback('❌ Отклонить', `meeting_decline_${userId}`)
+       ]
+     ])
+   );
+
+   updateUser(userId, { currentStep: undefined, tempData: undefined });
+   await ctx.reply('✅ Альтернативное предложение отправлено.');
+ } catch (error) {
+   console.error('Ошибка отправки альтернативного предложения:', error);
+   await ctx.reply('❌ Ошибка отправки предложения');
+ }
 }

@@ -14,6 +14,7 @@ import {
   getLatestInspection
 } from '../utils/database';
 import { MESSAGES, getWorkshopName, WORKSHOPS, ROLES } from '../config/messages';
+import { User } from '../utils/database';
 import { bot } from '../index';
 
 export async function handleManagerFlow(ctx: Context) {
@@ -52,16 +53,16 @@ export async function handleManagerFlow(ctx: Context) {
     await ctx.reply(
       'Выберите тип отчета:',
       Markup.keyboard([
-        ['📊 Отчет за сегодня', '📈 Аналитика'],
-        ['⬅️ Назад']
+        ['📊 Отчеты за неделю', '📈 Аналитика'],
+        ['🔮 Прогноз', '⬅️ Назад']
       ]).resize()
     );
     return;
   }
 
-  // Отчет за сегодня
-  if (input === '📊 Отчет за сегодня') {
-    await sendTodayReport(ctx);
+  // Отчеты за неделю
+  if (input === '📊 Отчеты за неделю') {
+    await sendWeekReports(ctx);
     return;
   }
 
@@ -73,6 +74,20 @@ export async function handleManagerFlow(ctx: Context) {
         Markup.button.webApp(
           '📈 Просмотр аналитики',
           'https://solar-athletics-nested-advertisements.trycloudflare.com/dashboards'
+        )
+      ])
+    );
+    return;
+  }
+
+  // Прогноз
+  if (input === '🔮 Прогноз') {
+    await ctx.reply(
+      '🔮 Открыть прогноз:',
+      Markup.inlineKeyboard([
+        Markup.button.webApp(
+          '🔮 Просмотр прогноза',
+          'https://solar-athletics-nested-advertisements.trycloudflare.com/breakdowns'
         )
       ])
     );
@@ -117,6 +132,11 @@ export async function handleManagerFlow(ctx: Context) {
     return;
   }
 
+  if (input === '📞 Связь с сотрудниками') {
+    await showEmployeesForCommunication(ctx);
+    return;
+  }
+
   // Back buttons
   if (input === '⬅️ Назад') {
     await ctx.reply(
@@ -133,6 +153,15 @@ export async function handleManagerFlow(ctx: Context) {
   if (user.currentStep === 'editing_schedule') {
     await handleScheduleEdit(ctx);
     return;
+  }
+
+  // Обработка callback кнопок
+  if (ctx.callbackQuery) {
+    const data = (ctx.callbackQuery as any).data;
+    if (data && data.startsWith('meeting_')) {
+      await handleMeetingCallback(ctx);
+      return;
+    }
   }
 
   // Обработка управления сотрудниками
@@ -163,6 +192,26 @@ export async function handleManagerFlow(ctx: Context) {
 
   if (user.currentStep === 'awaiting_password') {
     await handlePasswordCheck(ctx);
+    return;
+  }
+
+  if (user.currentStep === 'awaiting_employee_selection') {
+    await handleEmployeeSelection(ctx);
+    return;
+  }
+
+  if (user.currentStep === 'awaiting_meeting_time') {
+    await handleMeetingTimeProposal(ctx);
+    return;
+  }
+
+  if (user.currentStep === 'awaiting_meeting_response') {
+    await handleMeetingResponse(ctx);
+    return;
+  }
+
+  if (user.currentStep === 'awaiting_alternative_time') {
+    await handleAlternativeTime(ctx);
     return;
   }
 }
@@ -372,17 +421,41 @@ async function approveSchedule(ctx: Context) {
   await ctx.reply(MESSAGES.scheduleApproved);
 }
 
-async function sendTodayReport(ctx: Context) {
-  const inspection = getLatestInspection();
-  if (!inspection) {
-    await ctx.reply('❌ Отчеты за сегодня не найдены');
+async function sendWeekReports(ctx: Context) {
+  const fs = require('fs');
+  const path = require('path');
+  const reportsDir = path.join(__dirname, '../data/reports');
+
+  if (!fs.existsSync(reportsDir)) {
+    await ctx.reply('❌ Отчеты не найдены');
     return;
   }
 
-  const reportBuffer = generateInspectionReport(inspection);
+  const files: string[] = fs.readdirSync(reportsDir).filter((f: string) => f.startsWith('report_') && f.endsWith('.xlsx'));
+  if (files.length === 0) {
+    await ctx.reply('❌ Отчеты за неделю не найдены');
+    return;
+  }
+
+  // Sort by date descending
+  files.sort((a, b) => {
+    const dateA = a.split('_')[2].split('.')[0];
+    const dateB = b.split('_')[2].split('.')[0];
+    return new Date(dateB.split('.').reverse().join('-')).getTime() - new Date(dateA.split('.').reverse().join('-')).getTime();
+  });
+
+  // Send the latest report
+  const latestFile = files[0];
+  const filePath = path.join(reportsDir, latestFile);
+  const buffer = fs.readFileSync(filePath);
+
+  const parts = latestFile.split('_');
+  const date = parts[2].replace('.xlsx', '');
+  const workshop = parts[1]; // Assuming inspectorId is workshop or something, but actually it's inspectorId
+
   await ctx.replyWithDocument(
-    { source: reportBuffer, filename: `inspection_report_${inspection.date}.xlsx` },
-    { caption: `📊 Отчет по проверке цеха ${inspection.workshop} от ${inspection.date}` }
+    { source: buffer, filename: latestFile },
+    { caption: `📊 Последний отчет по проверке от ${date}` }
   );
 }
 
@@ -413,6 +486,7 @@ async function showEmployeesMenu(ctx: Context) {
     Markup.keyboard([
       ['👥 Текущие сотрудники'],
       ['➕ Изменить состав'],
+      ['📞 Связь с сотрудниками'],
       ['⬅️ Назад']
     ]).resize()
   );
@@ -447,7 +521,7 @@ async function startEmployeeManagement(ctx: Context) {
   const userId = ctx.from!.id;
   updateUser(userId, { currentStep: 'awaiting_password' });
 
-  await ctx.reply('🔒 Введите кодовое слово для доступа к управлению сотрудниками:', Markup.removeKeyboard());
+  await ctx.reply('🔒 Введите пароль для доступа к управлению сотрудниками:', Markup.removeKeyboard());
 }
 
 async function handleEmployeeAction(ctx: Context) {
@@ -553,6 +627,39 @@ async function handleAddEmployeePosition(ctx: Context) {
       ['📊 Отчеты']
     ]).resize()
   );
+}
+
+async function showEmployeesForCommunication(ctx: Context) {
+  const userId = ctx.from!.id;
+  const inspectors = getAllInspectors();
+  const managers = getAllManagers();
+  const supervisors = getAllSupervisors();
+
+  updateUser(userId, { currentStep: 'awaiting_employee_selection' });
+
+  let message = '📞 Выберите сотрудника для связи (введите номер):\n\n';
+  let employees: User[] = [];
+
+  inspectors.forEach((inspector, index) => {
+    message += `${index + 1}. 👷 ${inspector.fio || inspector.firstName}\n`;
+    employees.push(inspector);
+  });
+
+  managers.forEach((manager, index) => {
+    const num = inspectors.length + index + 1;
+    message += `${num}. 👔 ${manager.fio || manager.firstName}\n`;
+    employees.push(manager);
+  });
+
+  supervisors.forEach((supervisor, index) => {
+    const num = inspectors.length + managers.length + index + 1;
+    message += `${num}. 🏭 ${supervisor.fio || supervisor.firstName} (${getWorkshopName(supervisor.workshop!)})\n`;
+    employees.push(supervisor);
+  });
+
+  updateUser(userId, { tempData: { employees } });
+
+  await ctx.reply(message, Markup.removeKeyboard());
 }
 
 async function showEmployeesForRemoval(ctx: Context) {
@@ -711,4 +818,167 @@ async function handleSupervisorWorkshop(ctx: Context) {
       ['📊 Отчеты']
     ]).resize()
   );
+}
+
+async function handleEmployeeSelection(ctx: Context) {
+  const userId = ctx.from!.id;
+  const user = getUser(userId);
+  let input = '';
+  if ('text' in ctx.message!) {
+    input = ctx.message!.text;
+  } else {
+    return;
+  }
+
+  const num = parseInt(input);
+  if (isNaN(num) || !user?.tempData?.employees) {
+    await ctx.reply('❌ Введите корректный номер сотрудника');
+    return;
+  }
+
+  const employees = user.tempData.employees;
+  const selectedEmployee = employees[num - 1];
+
+  if (!selectedEmployee) {
+    await ctx.reply('❌ Неверный номер сотрудника');
+    return;
+  }
+
+  updateUser(userId, {
+    currentStep: 'awaiting_meeting_time',
+    tempData: { selectedEmployee }
+  });
+
+  await ctx.reply('📅 Предложите время встречи (например: завтра в 14:00):');
+}
+
+async function handleMeetingTimeProposal(ctx: Context) {
+  const userId = ctx.from!.id;
+  const user = getUser(userId);
+  let input = '';
+  if ('text' in ctx.message!) {
+    input = ctx.message!.text;
+  } else {
+    return;
+  }
+
+  const selectedEmployee = user?.tempData?.selectedEmployee;
+  if (!selectedEmployee) return;
+
+  // Send proposal to employee
+  try {
+    await bot.telegram.sendMessage(
+      selectedEmployee.telegramId,
+      `📅 ${user?.fio || user?.firstName} предлагает встретиться: ${input}\n\nПодтверждаете?`,
+      Markup.inlineKeyboard([
+        [
+          Markup.button.callback('✅ Согласен', `meeting_accept_${userId}`),
+          Markup.button.callback('❌ Отклонить', `meeting_decline_${userId}`)
+        ]
+      ])
+    );
+
+    updateUser(userId, {
+      currentStep: 'awaiting_meeting_response',
+      tempData: { selectedEmployee, proposedTime: input }
+    });
+
+    await ctx.reply('✅ Предложение отправлено. Ожидаем ответа.');
+  } catch (error) {
+    console.error('Ошибка отправки предложения:', error);
+    await ctx.reply('❌ Ошибка отправки предложения');
+  }
+}
+
+async function handleMeetingCallback(ctx: Context) {
+  const callbackQuery = ctx.callbackQuery!;
+  const data = (callbackQuery as any).data;
+  const userId = ctx.from!.id;
+  const user = getUser(userId);
+
+  const parts = data.split('_');
+  const action = parts[1];
+  const managerId = parseInt(parts[2]);
+
+  if (action === 'accept') {
+    // Notify manager
+    try {
+      await bot.telegram.sendMessage(managerId, `✅ ${user?.fio || user?.firstName} согласился на встречу`);
+      await ctx.editMessageText('✅ Вы согласились на встречу');
+    } catch (error) {
+      console.error('Ошибка уведомления менеджера:', error);
+    }
+  } else if (action === 'decline') {
+    // Ask for alternative time
+    updateUser(userId, { currentStep: 'awaiting_alternative_time', tempData: { managerId } });
+    await ctx.editMessageText('❌ Встреча отклонена. Предложите альтернативное время:');
+  }
+
+  await ctx.answerCbQuery();
+}
+
+async function handleMeetingResponse(ctx: Context) {
+  const userId = ctx.from!.id;
+  let input = '';
+  if ('text' in ctx.message!) {
+    input = ctx.message!.text;
+  } else {
+    return;
+  }
+
+  const tempData = getUser(userId)?.tempData;
+  if (!tempData?.selectedEmployee) return;
+
+  // Send counter proposal
+  try {
+    await bot.telegram.sendMessage(
+      tempData.selectedEmployee.telegramId,
+      `📅 ${getUser(userId)?.fio || 'Менеджер'} предлагает альтернативное время: ${input}`,
+      Markup.inlineKeyboard([
+        [
+          Markup.button.callback('✅ Согласен', `meeting_accept_${userId}`),
+          Markup.button.callback('❌ Отклонить', `meeting_decline_${userId}`)
+        ]
+      ])
+    );
+
+    await ctx.reply('✅ Альтернативное предложение отправлено.');
+  } catch (error) {
+    console.error('Ошибка отправки альтернативного предложения:', error);
+    await ctx.reply('❌ Ошибка отправки предложения');
+  }
+}
+
+async function handleAlternativeTime(ctx: Context) {
+  const userId = ctx.from!.id;
+  const user = getUser(userId);
+  let input = '';
+  if ('text' in ctx.message!) {
+    input = ctx.message!.text;
+  } else {
+    return;
+  }
+
+  const employeeId = user?.tempData?.selectedEmployee?.telegramId;
+  if (!employeeId) return;
+
+  // Send alternative proposal to employee
+  try {
+    await bot.telegram.sendMessage(
+      employeeId,
+      `📅 ${user?.fio || 'Менеджер'} предлагает альтернативное время: ${input}`,
+      Markup.inlineKeyboard([
+        [
+          Markup.button.callback('✅ Согласен', `meeting_accept_${userId}`),
+          Markup.button.callback('❌ Отклонить', `meeting_decline_${userId}`)
+        ]
+      ])
+    );
+
+    updateUser(userId, { currentStep: undefined, tempData: undefined });
+    await ctx.reply('✅ Альтернативное предложение отправлено.');
+  } catch (error) {
+    console.error('Ошибка отправки альтернативного предложения:', error);
+    await ctx.reply('❌ Ошибка отправки предложения');
+  }
 }

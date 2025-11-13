@@ -15,7 +15,7 @@ interface DevicePhoto {
 }
 
 // 🔧 НАСТРОЙКА: URL вашего backend
-const API_URL = 'https://believed-typical-equality-diego.trycloudflare.com/upload';
+const API_URL = 'https://robin-causing-porter-navigator.trycloudflare.com/upload';
 
 function CameraApp() {
   const [photos, setPhotos] = useState<DevicePhoto[]>([
@@ -172,19 +172,13 @@ function CameraApp() {
       
     } catch (error: any) {
       console.error('❌ Ошибка отправки:', error);
-      
-      let errorMessage = 'Не удалось отправить фото';
-      if (error.message) {
-        errorMessage += `: ${error.message}`;
-      }
-      
-      // Используем обычный alert для совместимости
-      if (tg && tg.showAlert && tg.version >= '6.1') {
-        tg.showAlert(errorMessage);
-      } else {
-        alert(errorMessage);
-      }
-      setIsSending(false);
+
+      // Небольшая задержка перед закрытием окна мини-апп
+      setTimeout(() => {
+        if (tg && tg.close) {
+          tg.close();
+        }
+      }, 1000);
     }
   };
 
@@ -289,8 +283,7 @@ function CameraApp() {
             </>
           ) : (
             <>
-              <Send size={20} />
-              📤 Отправить на анализ
+             
             </>
           )}
         </button>

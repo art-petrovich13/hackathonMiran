@@ -3,25 +3,50 @@
     "telegramId": 1024422309,
     "firstName": "Artem",
     "fio": "Петрович Артем Сергеевич",
-    "role": "inspector"
+    "role": "inspector",
+    "currentStep": "awaiting_comment",
+    "tempData": {
+      "workshop": 4,
+      "currentQuestion": 0,
+      "answers": [
+        {
+          "questionId": "complies",
+          "complies": false,
+          "photos": [],
+          "comment": ""
+        }
+      ],
+      "date": "13.11.2025",
+      "pendingQuestion": "complies",
+      "photos": [
+        "AgACAgIAAxkDAAIGZ2kV-BK57BodyUjrj-HT9djAhl4JAAJYDWsbwDawSP3T7RyiFkoAAQEAAwIAA3cAAzYE"
+      ],
+      "commentAsked": true,
+      "attempt": 1
+    }
   },
   {
     "telegramId": 1024252830,
     "firstName": "Орешек💖",
     "fio": "Капкович Арина Андреевна",
-    "role": "manager"
+    "role": "manager",
+    "currentStep": "awaiting_employee_action",
+    "tempData": {
+      "selectedEmployee": {
+        "telegramId": 1024422309,
+        "firstName": "Artem",
+        "fio": "Петрович Артем Сергеевич",
+        "role": "inspector"
+      },
+      "proposedTime": "12:00"
+    }
   },
   {
     "telegramId": 1258151845,
     "firstName": "weedkiller",
     "fio": "Галат Ксения Дмитриевна",
-    "role": "inspector",
-    "currentStep": "awaiting_time",
-    "tempData": {
-      "workshop": 2,
-      "supervisorId": 11,
-      "date": "14.11.2025"
-    }
+    "role": "supervisor",
+    "workshop": 1
   },
   {
     "telegramId": 6526202588,

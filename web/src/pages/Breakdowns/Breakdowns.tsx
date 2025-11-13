@@ -74,7 +74,7 @@ const DEVICE_IMAGES: { [key: string]: string } = {
   'generator-1': 'https://megaliner.by/upload/iblock/763/asvcwq7e81s9zk9sb3xcsulvtwlej2ew/elektrostantsija_benzinovaja_varteg_g950_kitaj_5817_160294_1.jpg',
   'generator-2': 'https://www.pnevmoteh.by/sites/pnevmoteh.by/files/images/qdfqm4qcsu9vc8obgzd3zk2bp240yreo.jpeg',
 
- 
+
 };
 
 // Функция для получения изображения по типу устройства
@@ -118,9 +118,9 @@ function Breakdowns() {
   const [loading, setLoading] = useState(true);
   const [priorityView, setPriorityView] = useState<'all' | 'high' | 'critical'>('all');
   const [chartType, setChartType] = useState<'bars' | 'radar'>('bars');
-  const [selectedRepairOption, setSelectedRepairOption] = useState<{deviceId: string, optionId: string} | null>(null);
-  const [confirmedRepairs, setConfirmedRepairs] = useState<{deviceId: string, optionId: string}[]>([]);
-  const [zoomedImage, setZoomedImage] = useState<{src: string, alt: string} | null>(null);
+  const [selectedRepairOption, setSelectedRepairOption] = useState<{ deviceId: string, optionId: string } | null>(null);
+  const [confirmedRepairs, setConfirmedRepairs] = useState<{ deviceId: string, optionId: string }[]>([]);
+  const [zoomedImage, setZoomedImage] = useState<{ src: string, alt: string } | null>(null);
 
   useEffect(() => {
     loadData();
@@ -138,10 +138,10 @@ function Breakdowns() {
         const facilityDevices = devicesData.filter(d => d.facility_id === facility.id);
 
         const devicesWithErrors: DeviceWithErrorsExtended[] = facilityDevices.map(device => {
-           const deviceErrors = errorLogsData.filter(e => e.device_id === device.id);
-           const { risk_score, failure_probability } = calculateDeviceRisk(device, deviceErrors);
-           const failurePrediction = predictFailure(device, deviceErrors);
-           const imageUrl = DEVICE_IMAGES[getDeviceImageKey(device.type)] || DEVICE_IMAGES['press-1']; // fallback image
+          const deviceErrors = errorLogsData.filter(e => e.device_id === device.id);
+          const { risk_score, failure_probability } = calculateDeviceRisk(device, deviceErrors);
+          const failurePrediction = predictFailure(device, deviceErrors);
+          const imageUrl = DEVICE_IMAGES[getDeviceImageKey(device.type)] || DEVICE_IMAGES['press-1']; // fallback image
 
           return {
             ...device,
@@ -187,15 +187,15 @@ function Breakdowns() {
     devices.forEach(device => {
       // Для каждого устройства генерируем случайное количество ошибок (0-8)
       const errorCount = Math.floor(Math.random() * 8);
-      
+
       for (let i = 0; i < errorCount; i++) {
         const daysAgo = Math.floor(Math.random() * 60); // Ошибки за последние 60 дней
         const errorDate = new Date(now);
         errorDate.setDate(now.getDate() - daysAgo);
-        
+
         const severity = Math.floor(Math.random() * 5) + 1; // 1-5
         const errorType = errorTypes[Math.floor(Math.random() * errorTypes.length)];
-        
+
         errorLogs.push({
           id: `error-${device.id}-${i}`,
           device_id: device.id,
@@ -216,18 +216,18 @@ function Breakdowns() {
   function predictFailure(device: Device, errorLogs: ErrorLog[]): FailurePrediction {
     const deviceAge = parseFloat(getDeviceAge(device.manufacture_date));
     const now = new Date();
-    
+
     // Детальный анализ ошибок за разные периоды
     const last24hErrors = errorLogs.filter(e => {
       const hoursSince = (now.getTime() - new Date(e.reported_at).getTime()) / (1000 * 60 * 60);
       return hoursSince <= 24;
     });
-    
+
     const recentErrors = errorLogs.filter(e => {
       const daysSince = (now.getTime() - new Date(e.reported_at).getTime()) / (1000 * 60 * 60 * 24);
       return daysSince <= 7;
     });
-    
+
     const monthlyErrors = errorLogs.filter(e => {
       const daysSince = (now.getTime() - new Date(e.reported_at).getTime()) / (1000 * 60 * 60 * 24);
       return daysSince <= 30;
@@ -399,7 +399,7 @@ function Breakdowns() {
     if (errorLogs.length > 0) {
       const lastErrorTime = new Date(errorLogs[0].reported_at).getTime();
       const hoursSinceLastError = (now.getTime() - lastErrorTime) / (1000 * 60 * 60);
-      
+
       if (hoursSinceLastError < 6) {
         probability += 10;
         reasons.push("Недавние ошибки указывают на активное развитие неисправности");
@@ -422,9 +422,9 @@ function Breakdowns() {
 
     // Расчет уверенности в прогнозе на основе данных
     const dataQuality = Math.min(
-      70 + 
-      (recentErrors.length * 3) + 
-      (criticalErrors.length * 8) + 
+      70 +
+      (recentErrors.length * 3) +
+      (criticalErrors.length * 8) +
       (errorTrend > 0.3 ? 10 : 0) +
       (monthlyErrors.length > 10 ? 5 : 0),
       95
@@ -501,25 +501,25 @@ function Breakdowns() {
   // Функция для расчета тренда ошибок
   function calculateErrorTrend(errorLogs: ErrorLog[]): number {
     if (errorLogs.length < 4) return 0;
-    
+
     const now = new Date();
     const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-    
+
     const recentErrors = errorLogs.filter(e => new Date(e.reported_at) > lastWeek).length;
-    const olderErrors = errorLogs.filter(e => 
+    const olderErrors = errorLogs.filter(e =>
       new Date(e.reported_at) > twoWeeksAgo && new Date(e.reported_at) <= lastWeek
     ).length;
-    
+
     if (olderErrors === 0) return recentErrors > 0 ? 1 : 0;
-    
+
     return (recentErrors - olderErrors) / olderErrors;
   }
 
   // Функция для получения вариантов ремонта
   function getRepairOptions(device: DeviceWithErrorsExtended): RepairOption[] {
     const prediction = device.failure_prediction!;
-    
+
     const baseOptions: RepairOption[] = [
       {
         id: 'quick_fix',
@@ -571,8 +571,8 @@ function Breakdowns() {
         cost: 'high',
         effectiveness: 95,
         partsRequired: [
-          ...prediction.partsNeeded || [], 
-          'Смазочные материалы', 
+          ...prediction.partsNeeded || [],
+          'Смазочные материалы',
           'Фильтры',
           'Уплотнители',
           'Крепежные элементы',
@@ -657,7 +657,7 @@ function Breakdowns() {
   // Функция для получения приоритетных устройств
   function getPriorityDevices() {
     if (!selectedFacility) return [];
-    
+
     return selectedFacility.devices
       .filter(device => device.risk_score >= 60)
       .sort((a, b) => b.risk_score - a.risk_score);
@@ -665,7 +665,7 @@ function Breakdowns() {
 
   function getCriticalDevices() {
     if (!selectedFacility) return [];
-    
+
     return selectedFacility.devices
       .filter(device => device.risk_score >= 80 || device.failure_probability >= 50)
       .sort((a, b) => b.risk_score - a.risk_score);
@@ -767,7 +767,7 @@ function Breakdowns() {
             <TrendingUp size={20} />
             Детальный прогноз поломки
           </h4>
-          
+
           <div className="prediction-grid">
             <div className="prediction-metric">
               <div className="metric-value">{prediction.probability}%</div>
@@ -784,9 +784,9 @@ function Breakdowns() {
             <div className="prediction-metric">
               <div className="metric-value">
                 <span className={`priority-badge priority-${prediction.repairPriority}`}>
-                  {prediction.repairPriority === 'critical' ? 'КРИТИЧЕСКИЙ' : 
-                   prediction.repairPriority === 'high' ? 'ВЫСОКИЙ' :
-                   prediction.repairPriority === 'medium' ? 'СРЕДНИЙ' : 'НИЗКИЙ'}
+                  {prediction.repairPriority === 'critical' ? 'КРИТИЧЕСКИЙ' :
+                    prediction.repairPriority === 'high' ? 'ВЫСОКИЙ' :
+                      prediction.repairPriority === 'medium' ? 'СРЕДНИЙ' : 'НИЗКИЙ'}
                 </span>
               </div>
               <div className="metric-label">Приоритет ремонта</div>
@@ -848,18 +848,17 @@ function Breakdowns() {
               {repairOptions.map(option => (
                 <div
                   key={option.id}
-                  className={`repair-option ${
-                    selectedRepairOption?.deviceId === device.id && selectedRepairOption?.optionId === option.id 
-                      ? 'selected' 
+                  className={`repair-option ${selectedRepairOption?.deviceId === device.id && selectedRepairOption?.optionId === option.id
+                      ? 'selected'
                       : ''
-                  }`}
+                    }`}
                   onClick={() => handleRepairOptionSelect(device.id, option.id)}
                 >
                   <div className="option-header">
                     <h5>{option.name}</h5>
                   </div>
                   <p className="option-description">{option.description}</p>
-                  
+
                   <div className="option-details">
                     <div className="detail-item">
                       <Clock size={14} />
@@ -909,7 +908,7 @@ function Breakdowns() {
 
             {selectedRepairOption?.deviceId === device.id && (
               <div className="repair-confirmation">
-                <button 
+                <button
                   className="confirm-button"
                   onClick={() => handleConfirmRepair(device.id, selectedRepairOption.optionId)}
                 >
@@ -971,9 +970,9 @@ function Breakdowns() {
                       </span>
                     </td>
                     <td>
-                      {errorLog.severity >= 4 ? 'Критическое' : 
-                       errorLog.severity >= 3 ? 'Значительное' : 
-                       'Незначительное'}
+                      {errorLog.severity >= 4 ? 'Критическое' :
+                        errorLog.severity >= 3 ? 'Значительное' :
+                          'Незначительное'}
                     </td>
                   </tr>
                 ))
@@ -1016,17 +1015,17 @@ function Breakdowns() {
       'generator-1': 'Дизельный генератор 500кВт - резервное электропитание',
       'generator-2': 'Газовый генератор 250кВт - аварийное энергоснабжение'
     };
-    
+
     return descriptions[deviceId] || 'Промышленное оборудование общего назначения';
   }
 
   // Данные для графика
   const priorityDevices = getPriorityDevices();
   const criticalDevices = getCriticalDevices();
-  
-  const displayDevices = priorityView === 'critical' ? criticalDevices : 
-                        priorityView === 'high' ? priorityDevices : 
-                        selectedFacility?.devices || [];
+
+  const displayDevices = priorityView === 'critical' ? criticalDevices :
+    priorityView === 'high' ? priorityDevices :
+      selectedFacility?.devices || [];
 
   // Статистика для графика
   const riskStats = {
@@ -1117,13 +1116,13 @@ function Breakdowns() {
               </h3>
               <div className="dashboard-controls">
                 <div className="chart-type-selector">
-                  <button 
+                  <button
                     className={`chart-btn ${chartType === 'bars' ? 'active' : ''}`}
                     onClick={() => setChartType('bars')}
                   >
                     Столбцы
                   </button>
-                  <button 
+                  <button
                     className={`chart-btn ${chartType === 'radar' ? 'active' : ''}`}
                     onClick={() => setChartType('radar')}
                   >
@@ -1131,20 +1130,20 @@ function Breakdowns() {
                   </button>
                 </div>
                 <div className="priority-filters">
-                  <button 
+                  <button
                     className={`filter-btn ${priorityView === 'all' ? 'active' : ''}`}
                     onClick={() => setPriorityView('all')}
                   >
                     Все ({selectedFacility.devices.length})
                   </button>
-                  <button 
+                  <button
                     className={`filter-btn ${priorityView === 'high' ? 'active' : ''}`}
                     onClick={() => setPriorityView('high')}
                   >
                     <Clock size={16} />
                     Высокие ({priorityDevices.length})
                   </button>
-                  <button 
+                  <button
                     className={`filter-btn ${priorityView === 'critical' ? 'active' : ''}`}
                     onClick={() => setPriorityView('critical')}
                   >
@@ -1171,14 +1170,14 @@ function Breakdowns() {
                               <span className="risk-value">{device.risk_score}</span>
                             </div>
                             <div className="bar-track">
-                              <div 
+                              <div
                                 className={`bar-fill priority-${priority}`}
                                 style={{ width: `${device.risk_score}%` }}
                               >
                                 <div className="bar-tooltip">
-                                  <strong>{device.name}</strong><br/>
-                                  Риск: {device.risk_score}%<br/>
-                                  Вероятность поломки: {device.failure_probability}%<br/>
+                                  <strong>{device.name}</strong><br />
+                                  Риск: {device.risk_score}%<br />
+                                  Вероятность поломки: {device.failure_probability}%<br />
                                   Приоритет: {priority.toUpperCase()}
                                 </div>
                               </div>
@@ -1206,9 +1205,9 @@ function Breakdowns() {
                           const x = 150 + Math.cos(angle) * 130;
                           const y = 150 + Math.sin(angle) * 130;
                           return (
-                            
-                              <div className="axis-label">{device.name.split(' ')[0]}</div>
-                          
+
+                            <div className="axis-label">{device.name.split(' ')[0]}</div>
+
                           );
                         })}
                       </div>
@@ -1228,9 +1227,9 @@ function Breakdowns() {
                               onClick={() => handleDeviceClick(device.id)}
                             >
                               <div className="point-tooltip">
-                                <strong>{device.name}</strong><br/>
-                                Уровень риска: {device.risk_score}%<br/>
-                                Вероятность: {device.failure_probability}%<br/>
+                                <strong>{device.name}</strong><br />
+                                Уровень риска: {device.risk_score}%<br />
+                                Вероятность: {device.failure_probability}%<br />
                                 Приоритет: {priority.toUpperCase()}
                               </div>
                             </div>
@@ -1238,9 +1237,7 @@ function Breakdowns() {
                         })}
                       </div>
                       {/* Добавляем центр радара */}
-                      <div className="radar-center">
-                        <button className="center-button">Центр</button>
-                      </div>
+                      
                     </div>
                   </div>
                 )}
@@ -1321,14 +1318,14 @@ function Breakdowns() {
                     {selectedFacility.devices.slice(0, 6).map(device => {
                       const priority = getPriorityLevel(device);
                       return (
-                        <div 
-                          key={device.id} 
+                        <div
+                          key={device.id}
                           className={`gallery-item priority-${priority}`}
                           onClick={() => handleDeviceClick(device.id)}
                         >
                           <div className="device-image">
-                            <img 
-                              src={device.imageUrl} 
+                            <img
+                              src={device.imageUrl}
                               alt={device.name}
                               onError={(e) => {
                                 (e.target as HTMLImageElement).src = '';
@@ -1342,9 +1339,9 @@ function Breakdowns() {
                             <div className="device-name">{device.name}</div>
                             <div className="device-priority">
                               <span className={`priority-dot priority-${priority}`}></span>
-                              {priority === 'critical' ? 'КРИТИЧЕСКИЙ' : 
-                               priority === 'high' ? 'ВЫСОКИЙ' :
-                               priority === 'medium' ? 'СРЕДНИЙ' : 'НИЗКИЙ'}
+                              {priority === 'critical' ? 'КРИТИЧЕСКИЙ' :
+                                priority === 'high' ? 'ВЫСОКИЙ' :
+                                  priority === 'medium' ? 'СРЕДНИЙ' : 'НИЗКИЙ'}
                             </div>
                           </div>
                         </div>
@@ -1367,17 +1364,16 @@ function Breakdowns() {
               return (
                 <div key={device.id} className="device-card">
                   <div
-                    className={`device-header risk-${riskLevel} priority-${priority} ${
-                      isRepairConfirmed ? 'repair-confirmed' : ''
-                    }`}
+                    className={`device-header risk-${riskLevel} priority-${priority} ${isRepairConfirmed ? 'repair-confirmed' : ''
+                      }`}
                     onClick={() => handleDeviceClick(device.id)}
                   >
                     <div className="device-image-small">
-                      <img 
-                        src={device.imageUrl} 
+                      <img
+                        src={device.imageUrl}
                         alt={device.name}
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'https://avatars.mds.yandex.net/get-altay/4971637/2a0000017d7611dffc402d53a45cd3fdb1f0/L_height';
+                          (e.target as HTMLImageElement).src = '';
                         }}
                       />
                     </div>
@@ -1404,7 +1400,7 @@ function Breakdowns() {
                       </div>
                       {device.failure_prediction && (
                         <div className="device-prediction">
-                          Вероятность поломки: <strong>{device.failure_prediction.probability}%</strong> 
+                          Вероятность поломки: <strong>{device.failure_prediction.probability}%</strong>
                           {' '}({getTimeframeLabel(device.failure_prediction.timeframe)})
                         </div>
                       )}
