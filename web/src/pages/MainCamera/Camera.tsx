@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Camera, Send } from 'lucide-react';
+import { Camera, Send, X, Plus } from 'lucide-react';
 import styles from './Camera.module.css';
+
+// Импорт изображений
+import example1 from './assets/Беспорядок_в_рабочем_пространстве.jpg';
+import example2 from './assets/Инструментальная_тележка_наладчика_1.jpg';
+import example3 from './assets/Россыпи сырья и техотходов.jpg';
+import example4 from './assets/Стеллаж (1).jpg';
 
 interface DevicePhoto {
   deviceId: number;
@@ -14,13 +20,12 @@ const API_URL = 'https://believed-typical-equality-diego.trycloudflare.com/uploa
 function CameraApp() {
   const [photos, setPhotos] = useState<DevicePhoto[]>([
     { deviceId: 1, photoUrl: null, file: null },
-    { deviceId: 2, photoUrl: null, file: null },
-    { deviceId: 3, photoUrl: null, file: null },
   ]);
 
   const [isSending, setIsSending] = useState(false);
   const [tg, setTg] = useState<any>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [showExampleModal, setShowExampleModal] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
@@ -83,6 +88,11 @@ function CameraApp() {
           : device
       ));
     }
+  };
+
+  const addPhotoField = () => {
+    const newDeviceId = photos.length + 1;
+    setPhotos(prev => [...prev, { deviceId: newDeviceId, photoUrl: null, file: null }]);
   };
 
   const allPhotosTaken = photos.every(photo => photo.photoUrl !== null);
@@ -191,13 +201,21 @@ function CameraApp() {
   return (
     <div className={styles.container}>
       <div className={styles.content}>
-        <h1 className={styles.title}>📸 Фото приборов</h1>
+        <h1 className={styles.title}>Зафиксировать проблему</h1>
+
+        {/* Кнопка примера фото */}
+        <button
+          className={styles.exampleButton}
+          onClick={() => setShowExampleModal(true)}
+        >
+          Пример фото
+        </button>
 
         {/* Отладочная информация */}
         {!userId && (
-          <div style={{ 
-            padding: '10px', 
-            background: '#fff3cd', 
+          <div style={{
+            padding: '10px',
+            background: '#fff3cd',
             border: '1px solid #ffc107',
             borderRadius: '8px',
             marginBottom: '15px'
@@ -216,15 +234,13 @@ function CameraApp() {
         {photos.map((device) => (
           <div key={device.deviceId} className={styles.deviceBlock}>
             <div className={styles.deviceContent}>
-              <h2 className={styles.deviceTitle}>Прибор {device.deviceId}</h2>
-
               <label htmlFor={`camera-input-${device.deviceId}`} className={styles.photoLabel}>
                 <div className={styles.photoUploadArea}>
                   {device.photoUrl ? (
                     <div className={styles.photoPreviewContainer}>
                       <img
                         src={device.photoUrl}
-                        alt={`Прибор ${device.deviceId}`}
+                        alt={`Фото ${device.deviceId}`}
                         className={styles.photoImage}
                       />
                       <div className={styles.photoOverlay}>
@@ -252,6 +268,14 @@ function CameraApp() {
           </div>
         ))}
 
+        {/* Кнопка добавления фото */}
+        <div className={styles.addPhotoContainer}>
+          <button className={styles.addPhotoButton} onClick={addPhotoField}>
+            <Plus size={20} />
+          </button>
+          <p className={styles.addPhotoText}>добавить фото еще</p>
+        </div>
+
         {/* Запасная кнопка (если MainButton не работает) */}
         <button 
           className={`${styles.submitButton} ${!allPhotosTaken || isSending ? styles.submitButtonDisabled : ''}`}
@@ -273,10 +297,31 @@ function CameraApp() {
 
         {!allPhotosTaken && (
           <p className={styles.helperText}>
-            Сделайте все 3 фото для отправки
+            Сделайте все фото для отправки
           </p>
         )}
       </div>
+
+      {/* Модальное окно с примерами фото */}
+      {showExampleModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowExampleModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <button
+              className={styles.closeButton}
+              onClick={() => setShowExampleModal(false)}
+            >
+              <X size={24} />
+            </button>
+            <h2>Примеры фото</h2>
+            <div className={styles.examplePhotos}>
+              <img src={example1} alt="Беспорядок в рабочем пространстве" />
+              <img src={example2} alt="Инструментальная тележка наладчика" />
+              <img src={example3} alt="Россыпи сырья и техотходов" />
+              <img src={example4} alt="Стеллаж" />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

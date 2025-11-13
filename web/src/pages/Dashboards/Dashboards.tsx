@@ -1,0 +1,551 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { TrendingUp, AlertTriangle, CheckCircle, BarChart3, Download, Filter, X } from 'lucide-react';
+import { facilities } from '../../data/objects';
+import './Dashboards.scss';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+
+// Генерация данных для трендов нарушений по участкам
+const generateTrendsData = () => {
+  const months = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
+  return months.map(month => {
+    const data: any = { month };
+    facilities.forEach(facility => {
+      data[facility.name] = Math.floor(Math.random() * 20) + 1;
+    });
+    return data;
+  });
+};
+
+// Генерация данных для топа повторяющихся нарушений
+const generateTopViolationsData = () => {
+  const violations = [
+    'Вибрация оборудования',
+    'Перегрев компонентов',
+    'Давление вне нормы',
+    'Электрические сбои',
+    'Механические повреждения',
+    'Программные ошибки',
+    'Утечки жидкостей',
+    'Шумовое загрязнение'
+  ];
+
+  return violations.map((violation, index) => ({
+    name: violation,
+    count: Math.floor(Math.random() * 50) + 10,
+    percentage: Math.floor(Math.random() * 100) + 1,
+    severity: ['high', 'medium', 'low'][Math.floor(Math.random() * 3)]
+  })).sort((a, b) => b.count - a.count).slice(0, 8);
+};
+
+// Генерация данных для выполнения планов проверок
+const generateInspectionData = () => {
+  return facilities.map(facility => ({
+    name: facility.name,
+    planned: Math.floor(Math.random() * 50) + 20,
+    completed: Math.floor(Math.random() * 40) + 10,
+    percentage: Math.floor(Math.random() * 100) + 1,
+    status: Math.random() > 0.5 ? 'completed' : 'pending'
+  }));
+};
+
+const SEVERITY_COLORS = {
+  high: '#ff4444',
+  medium: '#ffaa00',
+  low: '#00cc66'
+};
+
+const CHART_COLORS = [
+  '#0088FE', '#00C49F', '#FFBB28', '#FF8042', 
+  '#8884D8', '#82CA9D', '#FFC658', '#8DD1E1'
+];
+
+const STATUS_COLORS = {
+  completed: '#00cc66',
+  pending: '#ffaa00'
+};
+
+function Dashboards() {
+  const [trendsData, setTrendsData] = useState<any[]>([]);
+  const [topViolationsData, setTopViolationsData] = useState<any[]>([]);
+  const [inspectionData, setInspectionData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState('3m');
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    period: '3m',
+    facilities: facilities.map(f => f.id),
+    violationType: 'all',
+    inspectionStatus: 'all'
+  });
+  const dashboardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Имитация загрузки данных
+    setTimeout(() => {
+      setTrendsData(generateTrendsData());
+      setTopViolationsData(generateTopViolationsData());
+      setInspectionData(generateInspectionData());
+      setLoading(false);
+    }, 1500);
+  }, []);
+
+  // Фильтрация данных при изменении фильтров
+  useEffect(() => {
+    if (loading) return; // Не фильтруем пока загружаются данные
+
+    let filteredTrends = generateTrendsData();
+    let filteredViolations = generateTopViolationsData();
+    let filteredInspections = generateInspectionData();
+
+    // Фильтрация по периодам (количество месяцев)
+    const monthsCount = filters.period === '3m' ? 3 : filters.period === '6m' ? 6 : filters.period === '1y' ? 12 : 12;
+    filteredTrends = filteredTrends.slice(0, monthsCount);
+
+    // Фильтрация трендов по участкам
+    if (filters.facilities.length < facilities.length) {
+      filteredTrends = filteredTrends.map(month => {
+        const filteredMonth: any = { month };
+        filters.facilities.forEach(facilityId => {
+          const facility = facilities.find(f => f.id === facilityId);
+          if (facility) {
+            filteredMonth[facility.name] = month[facility.name];
+          }
+        });
+        return filteredMonth;
+      });
+    }
+
+    // Фильтрация нарушений по типу
+    if (filters.violationType !== 'all') {
+      const severityMap = { 'critical': 'high', 'warning': 'medium', 'info': 'low' };
+      filteredViolations = filteredViolations.filter(v => v.severity === severityMap[filters.violationType as keyof typeof severityMap]);
+    }
+
+    // Фильтрация проверок по участкам и статусу
+    if (filters.facilities.length < facilities.length) {
+      filteredInspections = filteredInspections.filter(item => {
+        const facility = facilities.find(f => f.name === item.name);
+        return facility && filters.facilities.includes(facility.id);
+      });
+    }
+
+    // Фильтрация по статусу проверок
+    if (filters.inspectionStatus !== 'all') {
+      filteredInspections = filteredInspections.filter(item => item.status === filters.inspectionStatus);
+    }
+
+    setTrendsData(filteredTrends);
+    setTopViolationsData(filteredViolations);
+    setInspectionData(filteredInspections);
+  }, [filters, loading]);
+
+  // Функция экспорта в PDF
+  const handleExportPDF = async () => {
+    if (!dashboardRef.current) return;
+
+    try {
+      const canvas = await html2canvas(dashboardRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#00ff88',
+        width: dashboardRef.current.scrollWidth,
+        height: dashboardRef.current.scrollHeight,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('landscape', 'mm', 'a4');
+
+      const imgWidth = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      pdf.save(`analytics_dashboard_${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+    }
+  };
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="custom-tooltip">
+          <p className="tooltip-label">{label}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} className="tooltip-item" style={{ color: entry.color }}>
+              {entry.name}: <strong>{entry.value}</strong>
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const getSeverityIcon = (severity: string) => {
+    switch (severity) {
+      case 'high': return '🔴';
+      case 'medium': return '🟡';
+      case 'low': return '🟢';
+      default: return '⚪';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="dashboards-container">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <div className="loading-text">Загрузка аналитики...</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="dashboards-container" ref={dashboardRef}>
+      {/* Header */}
+      <div className="dashboard-header">
+        <div className="header-content">
+          <div className="header-title">
+            <BarChart3 size={28} />
+            <h1>Аналитика нарушений</h1>
+          </div>
+          <div className="header-actions">
+            <button
+              className={`action-btn ${showFilters ? 'active' : ''}`}
+              onClick={() => setShowFilters(true)}
+            >
+              <Filter size={18} />
+              Фильтры
+            </button>
+            <button className="action-btn" onClick={handleExportPDF}>
+              <Download size={18} />
+              Экспорт PDF
+            </button>
+          </div>
+        </div>
+
+        {/* Time Range Selector */}
+        <div className="time-selector">
+          {['1m', '3m', '6m', '1y'].map(range => (
+            <button
+              key={range}
+              className={`time-btn ${timeRange === range ? 'active' : ''}`}
+              onClick={() => setTimeRange(range)}
+            >
+              {range === '1m' && '1 мес'}
+              {range === '3m' && '3 мес'}
+              {range === '6m' && '6 мес'}
+              {range === '1y' && '1 год'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Stats Overview */}
+      <div className="stats-overview">
+        <div className="stat-card">
+          <div className="stat-icon critical">
+            <AlertTriangle size={20} />
+          </div>
+          <div className="stat-content">
+            <div className="stat-value">24</div>
+            <div className="stat-label">Критические нарушения</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon warning">
+            <TrendingUp size={20} />
+          </div>
+          <div className="stat-content">
+            <div className="stat-value">156</div>
+            <div className="stat-label">Всего нарушений</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon success">
+            <CheckCircle size={20} />
+          </div>
+          <div className="stat-content">
+            <div className="stat-value">78%</div>
+            <div className="stat-label">Выполнение плана</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Dashboard Grid */}
+      <div className="dashboard-grid">
+        {/* Тренды нарушений по участкам */}
+        <div className="dashboard-card trends-card">
+          <div className="card-header">
+            <div className="card-title">
+              <TrendingUp size={20} />
+              <h2>Тренды нарушений по участкам</h2>
+            </div>
+          </div>
+          <div className="chart-container">
+            <ResponsiveContainer width="100%" height={320}>
+              <AreaChart data={trendsData}>
+                <defs>
+                  <linearGradient id="colorTrend1" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#00ff88" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#00ff88" stopOpacity={0.1}/>
+                  </linearGradient>
+                  <linearGradient id="colorTrend2" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#00cc66" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#00cc66" stopOpacity={0.1}/>
+                  </linearGradient>
+                  <linearGradient id="colorTrend3" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#009944" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#009944" stopOpacity={0.1}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis
+                  dataKey="month"
+                  stroke="#64748b"
+                  fontSize={12}
+                  tickLine={false}
+                />
+                <YAxis
+                  stroke="#64748b"
+                  fontSize={12}
+                  tickLine={false}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend
+                  verticalAlign="top"
+                  height={36}
+                  iconType="rect"
+                  iconSize={12}
+                />
+                {facilities.slice(0, 3).map((facility, index) => (
+                  <Area
+                    key={facility.id}
+                    type="monotone"
+                    dataKey={facility.name}
+                    stroke={CHART_COLORS[index % CHART_COLORS.length]}
+                    fill={`url(#colorTrend${index + 1})`}
+                    strokeWidth={3}
+                    dot={{ fill: CHART_COLORS[index % CHART_COLORS.length], strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, strokeWidth: 0 }}
+                  />
+                ))}
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Топ повторяющихся нарушений */}
+        <div className="dashboard-card violations-card">
+          <div className="card-header">
+            <div className="card-title">
+              <AlertTriangle size={20} />
+              <h2>Топ нарушений</h2>
+            </div>
+            <span className="card-badge">8 активных</span>
+          </div>
+          <div className="chart-container">
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={topViolationsData} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f0f0f0" />
+                <XAxis type="number" stroke="#666" fontSize={12} tickLine={false} />
+                <YAxis 
+                  type="category" 
+                  dataKey="name" 
+                  stroke="#666" 
+                  fontSize={12}
+                  tickLine={false}
+                  width={120}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Bar 
+                  dataKey="count" 
+                  radius={[0, 4, 4, 0]}
+                  background={{ fill: '#f5f5f5', radius: 4 }}
+                >
+                  {topViolationsData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={SEVERITY_COLORS[entry.severity as keyof typeof SEVERITY_COLORS] || CHART_COLORS[index % CHART_COLORS.length]} 
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="violations-list">
+            {topViolationsData.slice(0, 3).map((violation, index) => (
+              <div key={index} className="violation-item">
+                <span className="severity-icon">
+                  {getSeverityIcon(violation.severity)}
+                </span>
+                <span className="violation-name">{violation.name}</span>
+                <span className="violation-count">{violation.count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Выполнение планов проверок */}
+        <div className="dashboard-card inspection-card">
+          <div className="card-header">
+            <div className="card-title">
+              <CheckCircle size={20} />
+              <h2>Планы проверок</h2>
+            </div>
+            <div className="completion-rate">78%</div>
+          </div>
+          <div className="chart-container">
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart>
+                <Pie
+                  data={inspectionData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={2}
+                  dataKey="percentage"
+                >
+                  {inspectionData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={STATUS_COLORS[entry.status as keyof typeof STATUS_COLORS] || CHART_COLORS[index % CHART_COLORS.length]} 
+                    />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="pie-center-label">
+              <div className="center-value">78%</div>
+              <div className="center-text">Выполнено</div>
+            </div>
+          </div>
+          <div className="inspection-list">
+            {inspectionData.map((item, index) => (
+              <div key={index} className="inspection-item">
+                <div className="inspection-info">
+                  <div className="inspection-name">{item.name}</div>
+                  <div className="inspection-progress">
+                    <div className="progress-bar">
+                      <div 
+                        className="progress-fill"
+                        style={{ 
+                          width: `${item.percentage}%`,
+                          backgroundColor: item.status === 'completed' ? STATUS_COLORS.completed : STATUS_COLORS.pending
+                        }}
+                      ></div>
+                    </div>
+                    <span className="progress-text">{item.percentage}%</span>
+                  </div>
+                </div>
+                <div className={`inspection-status ${item.status}`}>
+                  {item.status === 'completed' ? '✅' : '⏳'}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Панель фильтров */}
+      {showFilters && (
+        <div className="filters-overlay" onClick={() => setShowFilters(false)}>
+          <div className="filters-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="filters-header">
+              <h3>Фильтры</h3>
+              <button className="close-btn" onClick={() => setShowFilters(false)}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="filters-content">
+              <div className="filter-group">
+                <label>Период</label>
+                <select
+                  value={filters.period}
+                  onChange={(e) => setFilters({ ...filters, period: e.target.value })}
+                >
+                  <option value="3m">3 месяца</option>
+                  <option value="6m">6 месяцев</option>
+                  <option value="1y">1 год</option>
+                  <option value="all">Все время</option>
+                </select>
+              </div>
+
+              <div className="filter-group">
+                <label>Участки</label>
+                <div className="facilities-checkboxes">
+                  {facilities.map(facility => (
+                    <label key={facility.id} className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={filters.facilities.includes(facility.id)}
+                        onChange={(e) => {
+                          const newFacilities = e.target.checked
+                            ? [...filters.facilities, facility.id]
+                            : filters.facilities.filter((id: string) => id !== facility.id);
+                          setFilters({ ...filters, facilities: newFacilities });
+                        }}
+                      />
+                      {facility.name}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="filter-group">
+                <label>Тип нарушений</label>
+                <select
+                  value={filters.violationType}
+                  onChange={(e) => setFilters({ ...filters, violationType: e.target.value })}
+                >
+                  <option value="all">Все нарушения</option>
+                  <option value="critical">Критические</option>
+                  <option value="warning">Предупреждения</option>
+                  <option value="info">Информационные</option>
+                </select>
+              </div>
+
+              <div className="filter-group">
+                <label>Статус проверок</label>
+                <select
+                  value={filters.inspectionStatus}
+                  onChange={(e) => setFilters({ ...filters, inspectionStatus: e.target.value })}
+                >
+                  <option value="all">Все</option>
+                  <option value="completed">Завершены</option>
+                  <option value="pending">В процессе</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="filters-actions">
+              <button
+                className="reset-btn"
+                onClick={() => setFilters({
+                  period: '3m',
+                  facilities: facilities.map(f => f.id),
+                  violationType: 'all',
+                  inspectionStatus: 'all'
+                })}
+              >
+                Сбросить
+              </button>
+              <button className="apply-btn" onClick={() => setShowFilters(false)}>
+                Применить
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default Dashboards;
