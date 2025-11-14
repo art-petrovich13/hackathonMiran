@@ -58,11 +58,28 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  position: relative;
 
   &:hover {
     background: rgba(0, 204, 102, 0.2);
     transform: translateY(-1px);
   }
+
+  &.has-filters {
+    border-color: #ff6b6b;
+  }
+
+  .filter-indicator {
+    color: #ff6b6b;
+    font-size: 8px;
+    margin-left: 4px;
+    animation: pulse 2s infinite;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 .time-selector {
@@ -498,9 +515,11 @@
 
 .heatmap-grid {
   display: grid;
-  grid-template-columns: 120px repeat(8, 1fr);
+  grid-template-columns: 120px repeat(auto-fit, minmax(50px, 1fr));
   gap: 2px;
   margin-bottom: 20px;
+  overflow-x: auto;
+  max-width: 100%;
 }
 
 .heatmap-header {
@@ -520,14 +539,17 @@
 .checklist-label {
   font-weight: 600;
   color: #64748b;
-  font-size: 11px;
-  padding: 8px 4px;
+  font-size: 9px;
+  padding: 4px 2px;
   text-align: center;
   background: #f8fafc;
   border-radius: 4px;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  transform: rotate(180deg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 50px;
+  max-width: 70px;
+  line-height: 1.2;
 }
 
 .heatmap-row {
@@ -537,12 +559,16 @@
 .facility-name {
   font-weight: 600;
   color: #374151;
-  font-size: 12px;
-  padding: 8px 4px;
+  font-size: 11px;
+  padding: 6px 4px;
   background: #f8fafc;
   border-radius: 4px;
   display: flex;
   align-items: center;
+  min-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .heatmap-cell {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, AlertTriangle, CheckCircle, BarChart3, Download, Filter, X } from 'lucide-react';
+import { TrendingUp, AlertTriangle, CheckCircle, BarChart3, Download, Filter, X, FileSpreadsheet } from 'lucide-react';
 import { facilities } from '../../data/objects';
 import './Dashboards.scss';
 import jsPDF from 'jspdf';
@@ -66,23 +66,66 @@ const generateTopViolationsData = () => {
 // Генерация данных для тепловой карты чек-листов
 const generateHeatmapData = () => {
   const checklistItems = [
-    'Визуальный осмотр',
-    'Проверка вибрации',
-    'Температурный контроль',
-    'Проверка давления',
-    'Электрические параметры',
-    'Механические узлы',
-    'Система охлаждения',
-    'Безопасность оборудования'
+    'Чистота пола и оборудования',
+    'Личные вещи работника',
+    'Головной убор и перчатки',
+    'Отсутствие посторонних предметов',
+    'Уборочный инвентарь',
+    'Тара и упаковочные материалы',
+    'Свободные проходы',
+    'Общий балл за раздел А',
+    'Состояние оборудования',
+    'Ответственность наладчика',
+    'Отсутствие пыли на оборудовании',
+    'Тумбочки и шкафы наладчиков',
+    'Защитные экраны',
+    'Отсутствие креплений скотчем',
+    'Внутри оборудования',
+    'Технологическая оснастка',
+    'Общий балл за раздел В1',
+    'Ответственность персонала ЭМО',
+    'Течь масла и жидкостей',
+    'Элементы внутри оборудования',
+    'Повреждения изоляции',
+    'Отсутствие вещей ЭМО',
+    'Панель управления',
+    'Защитные ограждения',
+    'Уборка и контейнеры',
+    'Раздельный сбор отходов',
+    'Места хранения сырья',
+    'Проходы и проезды',
+    'Маркировочные ярлыки',
+    'Электроштабелеры',
+    'Место питьевой воды'
   ];
 
   return facilities.map(facility => ({
     facility: facility.name,
-    checklists: checklistItems.map(item => ({
-      name: item,
-      score: Math.floor(Math.random() * 100) + 1,
-      status: Math.random() > 0.7 ? 'critical' : Math.random() > 0.4 ? 'warning' : 'good'
-    }))
+    checklists: checklistItems.map(item => {
+      // Более реалистичное распределение оценок
+      const random = Math.random();
+      let score, status;
+
+      if (random > 0.85) {
+        // 15% - критично (0-59%)
+        score = Math.floor(Math.random() * 60);
+        status = 'critical';
+      } else if (random > 0.6) {
+        // 25% - требует внимания (60-79%)
+        score = 60 + Math.floor(Math.random() * 20);
+        status = 'warning';
+      } else {
+        // 60% - хорошо (80-100%)
+        score = 80 + Math.floor(Math.random() * 21);
+        status = 'good';
+      }
+
+      return {
+        name: item,
+        score,
+        status
+      };
+    })
   }));
 };
 
@@ -91,6 +134,14 @@ const generateInspectionData = () => {
   const currentDate = new Date();
   const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
   const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+
+  // Функция для безопасного форматирования даты
+  const formatDate = (date: Date) => {
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}.${month}.${year}`;
+  };
 
   return facilities.map(facility => {
     const plannedInspections = Math.floor(Math.random() * 30) + 15;
@@ -108,8 +159,8 @@ const generateInspectionData = () => {
         weekly: Math.floor(plannedInspections / 4),
         monthly: plannedInspections
       },
-      lastInspection: new Date(currentDate.getTime() - Math.random() * 7 * 24 * 60 * 60 * 1000).toLocaleDateString('ru-RU'),
-      nextScheduled: new Date(currentDate.getTime() + Math.random() * 3 * 24 * 60 * 60 * 1000).toLocaleDateString('ru-RU')
+      lastInspection: formatDate(new Date(currentDate.getTime() - Math.random() * 7 * 24 * 60 * 60 * 1000)),
+      nextScheduled: formatDate(new Date(currentDate.getTime() + Math.random() * 3 * 24 * 60 * 60 * 1000))
     };
   });
 };
@@ -131,12 +182,16 @@ const STATUS_COLORS = {
 };
 
 function Dashboards() {
+  const [originalTrendsData, setOriginalTrendsData] = useState<any[]>([]);
+  const [originalTopViolationsData, setOriginalTopViolationsData] = useState<any[]>([]);
+  const [originalInspectionData, setOriginalInspectionData] = useState<any[]>([]);
+  const [originalHeatmapData, setOriginalHeatmapData] = useState<any[]>([]);
+
   const [trendsData, setTrendsData] = useState<any[]>([]);
   const [topViolationsData, setTopViolationsData] = useState<any[]>([]);
   const [inspectionData, setInspectionData] = useState<any[]>([]);
   const [heatmapData, setHeatmapData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState('3m');
   const [showFilters, setShowFilters] = useState(false);
   const [trendsView, setTrendsView] = useState<'facilities' | 'categories' | 'teams'>('facilities');
   const [topViolationsCount, setTopViolationsCount] = useState(8);
@@ -151,21 +206,32 @@ function Dashboards() {
   useEffect(() => {
     // Имитация загрузки данных
     setTimeout(() => {
-      setTrendsData(generateTrendsData());
-      setTopViolationsData(generateTopViolationsData().slice(0, topViolationsCount));
-      setInspectionData(generateInspectionData());
-      setHeatmapData(generateHeatmapData());
+      const trends = generateTrendsData();
+      const violations = generateTopViolationsData();
+      const inspections = generateInspectionData();
+      const heatmap = generateHeatmapData();
+
+      setOriginalTrendsData(trends);
+      setOriginalTopViolationsData(violations);
+      setOriginalInspectionData(inspections);
+      setOriginalHeatmapData(heatmap);
+
+      setTrendsData(trends);
+      setTopViolationsData(violations.slice(0, topViolationsCount));
+      setInspectionData(inspections);
+      setHeatmapData(heatmap);
       setLoading(false);
     }, 1500);
-  }, [topViolationsCount]);
+  }, []);
 
-  // Фильтрация данных при изменении фильтров
+  // Фильтрация данных при изменении фильтров или количества нарушений
   useEffect(() => {
-    if (loading) return; // Не фильтруем пока загружаются данные
+    if (loading || !originalTrendsData.length) return;
 
-    let filteredTrends = generateTrendsData();
-    let filteredViolations = generateTopViolationsData();
-    let filteredInspections = generateInspectionData();
+    let filteredTrends = [...originalTrendsData];
+    let filteredViolations = [...originalTopViolationsData];
+    let filteredInspections = [...originalInspectionData];
+    let filteredHeatmap = [...originalHeatmapData];
 
     // Фильтрация по периодам (количество месяцев)
     const monthsCount = filters.period === '3m' ? 3 : filters.period === '6m' ? 6 : filters.period === '1y' ? 12 : 12;
@@ -191,6 +257,9 @@ function Dashboards() {
       filteredViolations = filteredViolations.filter(v => v.severity === severityMap[filters.violationType as keyof typeof severityMap]);
     }
 
+    // Фильтрация по количеству топ нарушений
+    filteredViolations = filteredViolations.slice(0, topViolationsCount);
+
     // Фильтрация проверок по участкам и статусу
     if (filters.facilities.length < facilities.length) {
       filteredInspections = filteredInspections.filter(item => {
@@ -204,36 +273,289 @@ function Dashboards() {
       filteredInspections = filteredInspections.filter(item => item.status === filters.inspectionStatus);
     }
 
+    // Фильтрация тепловой карты по участкам
+    if (filters.facilities.length < facilities.length) {
+      filteredHeatmap = filteredHeatmap.filter(item => {
+        const facility = facilities.find(f => f.name === item.facility);
+        return facility && filters.facilities.includes(facility.id);
+      });
+    }
+
     setTrendsData(filteredTrends);
     setTopViolationsData(filteredViolations);
     setInspectionData(filteredInspections);
-  }, [filters, loading]);
+    setHeatmapData(filteredHeatmap);
+  }, [filters, topViolationsCount, loading, originalTrendsData, originalTopViolationsData, originalInspectionData, originalHeatmapData]);
 
-  // Функция экспорта в PDF
+  // Функция экспорта в Excel (CSV) с улучшенной кодировкой
+  const handleExportExcel = () => {
+    try {
+      // Функция для безопасного экранирования текста
+      const escapeCSV = (text: string) => {
+        // Заменяем проблемные символы на безопасные аналоги
+        const safeText = text
+          .replace(/"/g, '""') // Экранируем кавычки
+          .replace(/№/g, 'N') // Заменяем № на N
+          .replace(/•/g, '-') // Заменяем маркеры на тире
+          .replace(/…/g, '...') // Заменяем многоточие
+          .replace(/–/g, '-') // Заменяем длинное тире
+          .replace(/—/g, '-') // Заменяем em-dash
+          .replace(/'/g, "'") // Оставляем апострофы
+          .replace(/'/g, "'") // Оставляем кавычки
+          .replace(/«/g, '"') // Заменяем французские кавычки
+          .replace(/»/g, '"')
+          .replace(/„/g, '"')
+          .replace(/"/g, '"')
+          .replace(/'/g, "'")
+          .replace(/'/g, "'")
+          .replace(/##/g, '') // Удаляем хэш-символы
+          .replace(/#/g, '') // Удаляем одиночные хэши
+          .replace(/\uFFFD/g, '') // Удаляем replacement characters
+          .replace(/\u0000/g, '') // Удаляем null characters
+          .replace(/[\x00-\x1F\x7F-\x9F]/g, ''); // Удаляем управляющие символы
+
+        // Если текст содержит разделитель, заключаем в кавычки
+        return safeText.includes(';') || safeText.includes('"') || safeText.includes('\n')
+          ? `"${safeText}"`
+          : safeText;
+      };
+
+      // Используем точку с запятой как разделитель (стандарт для русской версии Excel)
+      const separator = ';';
+      let csvContent = '';
+
+      // Заголовок отчета
+      csvContent += escapeCSV('Аналитический отчет по нарушениям оборудования') + '\n';
+      csvContent += escapeCSV('Дата формирования') + separator + escapeCSV(`${new Date().toLocaleDateString('ru-RU')} ${new Date().toLocaleTimeString('ru-RU')}`) + '\n';
+      csvContent += escapeCSV('Период анализа') + separator + escapeCSV(filters.period === '1m' ? '1 месяц' : filters.period === '3m' ? '3 месяца' : filters.period === '6m' ? '6 месяцев' : '1 год') + '\n\n';
+
+      // Раздел 1: Статистика
+      csvContent += escapeCSV('СТАТИСТИКА') + '\n';
+      csvContent += escapeCSV('Показатель') + separator + escapeCSV('Значение') + '\n';
+      csvContent += escapeCSV('Критических нарушений') + separator + topViolationsData.filter(v => v.severity === 'high').length + '\n';
+      csvContent += escapeCSV('Всего нарушений') + separator + topViolationsData.reduce((sum, v) => sum + v.count, 0) + '\n';
+      csvContent += escapeCSV('Выполнение плана проверок') + separator + escapeCSV(`${inspectionData.length > 0 ? Math.round(inspectionData.reduce((sum, item) => sum + item.percentage, 0) / inspectionData.length) : 0}%`) + '\n\n';
+
+      // Раздел 2: Тренды нарушений
+      csvContent += escapeCSV('ТРЕНДЫ НАРУШЕНИЙ ПО МЕСЯЦАМ') + '\n';
+      const trendHeaders = ['Месяц', ...facilities.slice(0, 3).map(f => f.name)];
+      csvContent += trendHeaders.map(escapeCSV).join(separator) + '\n';
+      trendsData.forEach(month => {
+        const row = [escapeCSV(month.month)];
+        facilities.slice(0, 3).forEach(facility => {
+          row.push(month[facility.name]?.toString() || '0');
+        });
+        csvContent += row.join(separator) + '\n';
+      });
+      csvContent += '\n';
+
+      // Раздел 3: Топ нарушений
+      csvContent += escapeCSV('ТОП НАРУШЕНИЙ') + '\n';
+      csvContent += escapeCSV('№') + separator + escapeCSV('Тип нарушения') + separator + escapeCSV('Количество') + separator + escapeCSV('Уровень серьезности') + '\n';
+      topViolationsData.forEach((violation, index) => {
+        const severityText = violation.severity === 'high' ? 'Критический' :
+                           violation.severity === 'medium' ? 'Средний' : 'Низкий';
+        csvContent += (index + 1) + separator + escapeCSV(violation.name) + separator + violation.count + separator + escapeCSV(severityText) + '\n';
+      });
+      csvContent += '\n';
+
+      // Раздел 4: Выполнение проверок
+      csvContent += escapeCSV('ВЫПОЛНЕНИЕ ГРАФИКА ПРОВЕРОК') + '\n';
+      csvContent += escapeCSV('Участок') + separator + escapeCSV('План проверок') + separator + escapeCSV('Выполнено') + separator + escapeCSV('Процент выполнения') + separator + escapeCSV('Статус') + separator + escapeCSV('Последняя проверка') + separator + escapeCSV('Следующая проверка') + '\n';
+      inspectionData.forEach(item => {
+        const statusText = item.status === 'excellent' ? 'Отлично' :
+                          item.status === 'good' ? 'Хорошо' :
+                          item.status === 'warning' ? 'Требует внимания' : 'Критично';
+        // Безопасная обработка дат - используем только цифры и точки
+        const safeLastInspection = item.lastInspection.replace(/[^\d.]/g, '');
+        const safeNextScheduled = item.nextScheduled.replace(/[^\d.]/g, '');
+        csvContent += escapeCSV(item.name) + separator + item.planned + separator + item.completed + separator + escapeCSV(`${item.percentage}%`) + separator + escapeCSV(statusText) + separator + escapeCSV(safeLastInspection) + separator + escapeCSV(safeNextScheduled) + '\n';
+      });
+      csvContent += '\n';
+
+      // Раздел 5: Тепловая карта чек-листов
+      csvContent += escapeCSV('ОЦЕНКИ ЧЕК-ЛИСТОВ ПО УЧАСТКАМ') + '\n';
+      if (heatmapData.length > 0) {
+        const checklistHeaders = ['Участок', ...heatmapData[0].checklists.map((item: any) => item.name)];
+        csvContent += checklistHeaders.map(escapeCSV).join(separator) + '\n';
+
+        heatmapData.forEach(facility => {
+          const row = [escapeCSV(facility.facility)];
+          facility.checklists.forEach((item: any) => {
+            row.push(escapeCSV(`${item.score}%`));
+          });
+          csvContent += row.join(separator) + '\n';
+        });
+      }
+      csvContent += '\n';
+
+      // Раздел 6: Анализ трендов
+      csvContent += escapeCSV('АНАЛИЗ ТРЕНДОВ') + '\n';
+      const totalViolations = trendsData.reduce((sum, month) => {
+        return sum + facilities.slice(0, 3).reduce((facilitySum, facility) => facilitySum + (month[facility.name] || 0), 0);
+      }, 0);
+      const avgMonthly = Math.round(totalViolations / trendsData.length);
+      csvContent += escapeCSV('Среднее количество нарушений в месяц') + separator + avgMonthly + '\n';
+
+      const increasingMonths = trendsData.slice(1).filter((month, index) => {
+        const prevTotal = facilities.slice(0, 3).reduce((sum, f) => sum + (trendsData[index][f.name] || 0), 0);
+        const currTotal = facilities.slice(0, 3).reduce((sum, f) => sum + (month[f.name] || 0), 0);
+        return currTotal > prevTotal;
+      }).length;
+      csvContent += escapeCSV('Месяцев с ростом нарушений') + separator + escapeCSV(`${increasingMonths} из ${trendsData.length - 1}`) + '\n\n';
+
+      // Рекомендации
+      csvContent += escapeCSV('РЕКОМЕНДАЦИИ') + '\n';
+      if (topViolationsData.filter(v => v.severity === 'high').length > 0) {
+        csvContent += escapeCSV('- Необходимо срочно устранить критические нарушения') + '\n';
+      }
+      if (inspectionData.some(item => item.percentage < 70)) {
+        csvContent += escapeCSV('- Улучшить выполнение графика проверок на участках с низкими показателями') + '\n';
+      }
+      if (heatmapData.some(facility => facility.checklists.some((item: any) => item.score < 60))) {
+        csvContent += escapeCSV('- Провести дополнительное обучение персонала по чек-листам') + '\n';
+      }
+
+      // Создаем файл с правильной кодировкой
+      const BOM = '\uFEFF'; // UTF-8 BOM для Excel
+      const csvWithBOM = BOM + csvContent;
+
+      // Используем data URL с encodeURIComponent для максимальной совместимости
+      const dataUrl = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvWithBOM);
+
+      const link = document.createElement('a');
+      link.setAttribute('href', dataUrl);
+      link.setAttribute('download', `analytics_data_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+    } catch (error) {
+      console.error('Error exporting Excel:', error);
+      alert('Ошибка при экспорте данных. Попробуйте еще раз.');
+    }
+  };
+
+  // Функция экспорта в PDF - используем html2canvas для сохранения кириллицы
   const handleExportPDF = async () => {
     if (!dashboardRef.current) return;
 
     try {
-      const canvas = await html2canvas(dashboardRef.current, {
+      // Создаем временный контейнер для экспорта
+      const exportContainer = document.createElement('div');
+      exportContainer.style.position = 'absolute';
+      exportContainer.style.left = '-9999px';
+      exportContainer.style.top = '-9999px';
+      exportContainer.style.width = '800px';
+      exportContainer.style.backgroundColor = '#ffffff';
+      exportContainer.style.fontFamily = 'Arial, sans-serif';
+      document.body.appendChild(exportContainer);
+
+      // Копируем содержимое дашборда
+      const dashboardClone = dashboardRef.current.cloneNode(true) as HTMLElement;
+
+      // Удаляем элементы управления (фильтры, кнопки экспорта)
+      const filtersToRemove = dashboardClone.querySelectorAll('.filters-overlay, .action-btn');
+      filtersToRemove.forEach(el => el.remove());
+
+      // Устанавливаем стили для экспорта
+      dashboardClone.style.width = '800px';
+      dashboardClone.style.padding = '20px';
+      dashboardClone.style.backgroundColor = '#ffffff';
+      dashboardClone.style.boxShadow = 'none';
+      dashboardClone.style.border = 'none';
+
+      exportContainer.appendChild(dashboardClone);
+
+      // Создаем PDF
+      const pdf = new jsPDF('portrait', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      // Создаем canvas из HTML
+      const canvas = await html2canvas(dashboardClone, {
         scale: 2,
         useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#00ff88',
-        width: dashboardRef.current.scrollWidth,
-        height: dashboardRef.current.scrollHeight,
+        allowTaint: false,
+        backgroundColor: '#ffffff',
+        width: 800,
+        height: dashboardClone.scrollHeight,
+        logging: false
       });
 
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('landscape', 'mm', 'a4');
+      // Удаляем временный контейнер
+      document.body.removeChild(exportContainer);
 
-      const imgWidth = 297;
+      const imgData = canvas.toDataURL('image/png', 1.0);
+
+      // Разбиваем изображение на страницы если оно слишком большое
+      const imgWidth = 210; // A4 ширина в мм
+      const pageHeightPx = 297; // A4 высота в мм
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-      pdf.save(`analytics_dashboard_${new Date().toISOString().split('T')[0]}.pdf`);
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      // Добавляем первую страницу
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeightPx;
+
+      // Добавляем дополнительные страницы если нужно
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeightPx;
+      }
+
+      // Устанавливаем метаданные
+      pdf.setProperties({
+        title: 'Аналитический отчет по нарушениям оборудования',
+        subject: 'Отчет системы мониторинга оборудования',
+        author: 'Система мониторинга',
+        keywords: 'аналитика, оборудование, нарушения',
+        creator: 'Система мониторинга оборудования'
+      });
+
+      // Сохраняем PDF
+      const fileName = `analytics_dashboard_${new Date().toISOString().split('T')[0]}_${new Date().toISOString().split('T')[1].split('.')[0].replace(/:/g, '-')}.pdf`;
+      pdf.save(fileName);
+
     } catch (error) {
       console.error('Error exporting PDF:', error);
+      alert('Ошибка при экспорте PDF. Попробуйте еще раз.');
     }
+  };
+
+  // Функция применения фильтров
+  const handleApplyFilters = () => {
+    setShowFilters(false);
+    // Фильтры применяются автоматически через useEffect
+  };
+
+  // Функция сброса фильтров
+  const handleResetFilters = () => {
+    const defaultFilters = {
+      period: '3m',
+      facilities: facilities.map(f => f.id),
+      violationType: 'all',
+      inspectionStatus: 'all'
+    };
+    setFilters(defaultFilters);
+    setTopViolationsCount(8);
+    setTrendsView('facilities');
+  };
+
+  // Проверка, активны ли фильтры
+  const areFiltersActive = () => {
+    return (
+      filters.period !== '3m' ||
+      filters.facilities.length !== facilities.length ||
+      filters.violationType !== 'all' ||
+      filters.inspectionStatus !== 'all' ||
+      topViolationsCount !== 8
+    );
   };
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -283,11 +605,16 @@ function Dashboards() {
           </div>
           <div className="header-actions">
             <button
-              className={`action-btn ${showFilters ? 'active' : ''}`}
+              className={`action-btn ${showFilters ? 'active' : ''} ${areFiltersActive() ? 'has-filters' : ''}`}
               onClick={() => setShowFilters(true)}
             >
               <Filter size={18} />
               Фильтры
+              {areFiltersActive() && <span className="filter-indicator">●</span>}
+            </button>
+            <button className="action-btn" onClick={handleExportExcel}>
+              <FileSpreadsheet size={18} />
+              Экспорт Excel
             </button>
             <button className="action-btn" onClick={handleExportPDF}>
               <Download size={18} />
@@ -301,8 +628,8 @@ function Dashboards() {
           {['1m', '3m', '6m', '1y'].map(range => (
             <button
               key={range}
-              className={`time-btn ${timeRange === range ? 'active' : ''}`}
-              onClick={() => setTimeRange(range)}
+              className={`time-btn ${filters.period === range ? 'active' : ''}`}
+              onClick={() => setFilters({ ...filters, period: range })}
             >
               {range === '1m' && '1 мес'}
               {range === '3m' && '3 мес'}
@@ -320,7 +647,9 @@ function Dashboards() {
             <AlertTriangle size={20} />
           </div>
           <div className="stat-content">
-            <div className="stat-value">24</div>
+            <div className="stat-value">
+              {topViolationsData.filter(v => v.severity === 'high').length}
+            </div>
             <div className="stat-label">Критические нарушения</div>
           </div>
         </div>
@@ -329,7 +658,9 @@ function Dashboards() {
             <TrendingUp size={20} />
           </div>
           <div className="stat-content">
-            <div className="stat-value">156</div>
+            <div className="stat-value">
+              {topViolationsData.reduce((sum, v) => sum + v.count, 0)}
+            </div>
             <div className="stat-label">Всего нарушений</div>
           </div>
         </div>
@@ -338,7 +669,9 @@ function Dashboards() {
             <CheckCircle size={20} />
           </div>
           <div className="stat-content">
-            <div className="stat-value">78%</div>
+            <div className="stat-value">
+              {inspectionData.length > 0 ? Math.round(inspectionData.reduce((sum, item) => sum + item.percentage, 0) / inspectionData.length) : 0}%
+            </div>
             <div className="stat-label">Выполнение плана</div>
           </div>
         </div>
@@ -616,8 +949,8 @@ function Dashboards() {
               <div className="heatmap-header">
                 <div className="facility-label">Участок</div>
                 {heatmapData[0]?.checklists.map((item: any, index: number) => (
-                  <div key={index} className="checklist-label">
-                    {item.name.split(' ')[0]}
+                  <div key={index} className="checklist-label" title={item.name}>
+                    {item.name.length > 15 ? item.name.substring(0, 12) + '...' : item.name}
                   </div>
                 ))}
               </div>
@@ -729,16 +1062,11 @@ function Dashboards() {
             <div className="filters-actions">
               <button
                 className="reset-btn"
-                onClick={() => setFilters({
-                  period: '3m',
-                  facilities: facilities.map(f => f.id),
-                  violationType: 'all',
-                  inspectionStatus: 'all'
-                })}
+                onClick={handleResetFilters}
               >
                 Сбросить
               </button>
-              <button className="apply-btn" onClick={() => setShowFilters(false)}>
+              <button className="apply-btn" onClick={handleApplyFilters}>
                 Применить
               </button>
             </div>
