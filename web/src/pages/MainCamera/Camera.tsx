@@ -15,7 +15,7 @@ interface DevicePhoto {
 }
 
 // 🔧 НАСТРОЙКА: URL вашего backend
-const API_URL = 'https://robin-causing-porter-navigator.trycloudflare.com/upload';
+const API_URL = 'https://presentations-experiencing-psychology-restore.trycloudflare.com/upload';
 
 function CameraApp() {
   const [photos, setPhotos] = useState<DevicePhoto[]>([
