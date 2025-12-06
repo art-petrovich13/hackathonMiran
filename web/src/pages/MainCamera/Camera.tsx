@@ -3,10 +3,10 @@ import { Camera, Send, X, Plus } from 'lucide-react';
 import styles from './Camera.module.css';
 
 // Импорт изображений
-import example1 from './assets/Беспорядок_в_рабочем_пространстве.jpg';
-import example2 from './assets/Инструментальная_тележка_наладчика_1.jpg';
-import example3 from './assets/Россыпи сырья и техотходов.jpg';
-import example4 from './assets/Стеллаж (1).jpg';
+import example1 from './assets/photo_1.jpg';
+import example2 from './assets/photo_2.jpeg';
+import example3 from './assets/photo_3.jpg';
+import example4 from './assets/photo_4.jpg';
 
 interface DevicePhoto {
   deviceId: number;
@@ -15,7 +15,55 @@ interface DevicePhoto {
 }
 
 // 🔧 НАСТРОЙКА: URL вашего backend
-const API_URL = 'https://robin-causing-porter-navigator.trycloudflare.com/upload';
+const API_URL = 'https://many-vermont-auckland-advertisement.trycloudflare.com/upload';
+
+// Компонент снежинок
+const Snowflakes = () => {
+  const [snowflakes, setSnowflakes] = useState<Array<{ 
+    id: number; 
+    left: number; 
+    duration: number; 
+    size: number 
+  }>>([]);
+
+  useEffect(() => {
+    const flakes = Array.from({ length: 30 }).map((_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      duration: 5 + Math.random() * 10,
+      size: 0.5 + Math.random() * 1.5
+    }));
+    setSnowflakes(flakes);
+  }, []);
+
+  return (
+    <div className={styles.snowContainer}>
+      {snowflakes.map((flake) => (
+        <div
+          key={flake.id}
+          className={styles.snowflake}
+          style={{
+            left: `${flake.left}%`,
+            animationDuration: `${flake.duration}s`,
+            animationDelay: `${Math.random() * 5}s`,
+            fontSize: `${flake.size}em`,
+            opacity: 0.3 + Math.random() * 0.5
+          }}
+        >
+          ❄
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Декоративные елочные шары
+const ChristmasDecorations = () => (
+  <>
+    <div className={`${styles.christmasDecoration} ${styles.ornament1}`} />
+    <div className={`${styles.christmasDecoration} ${styles.ornament2}`} />
+  </>
+);
 
 function CameraApp() {
   const [photos, setPhotos] = useState<DevicePhoto[]>([
@@ -72,7 +120,7 @@ function CameraApp() {
       }
       
       // Настройка главной кнопки
-      telegram.MainButton.setText('📤 Отправить на анализ');
+      telegram.MainButton.setText('📤 Отправить ');
       telegram.MainButton.hide();
     }
   }, []);
@@ -194,8 +242,11 @@ function CameraApp() {
 
   return (
     <div className={styles.container}>
+      <Snowflakes />
+      <ChristmasDecorations />
+      
       <div className={styles.content}>
-        <h1 className={styles.title}>Зафиксировать проблему</h1>
+        <h1 className={styles.title}>Оставь вещественное доказательство </h1>
 
         {/* Кнопка примера фото */}
         <button
@@ -267,7 +318,7 @@ function CameraApp() {
           <button className={styles.addPhotoButton} onClick={addPhotoField}>
             <Plus size={20} />
           </button>
-          <p className={styles.addPhotoText}>добавить фото еще</p>
+          <p className={styles.addPhotoText}>Ловите еще кадр</p>
         </div>
 
         {/* Запасная кнопка (если MainButton не работает) */}
@@ -283,7 +334,7 @@ function CameraApp() {
             </>
           ) : (
             <>
-             
+              📤 Отправить
             </>
           )}
         </button>
