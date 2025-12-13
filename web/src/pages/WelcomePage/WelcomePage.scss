@@ -1,0 +1,498 @@
+.welcome-page {
+  min-height: 100vh;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(41, 128, 185, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(155, 89, 182, 0.1) 0%, transparent 50%),
+    linear-gradient(135deg, #0c1a2d 0%, #152642 30%, #1a1a2e 70%, #16213e 100%);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: white;
+  perspective: 1000px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 50% 0%, rgba(52, 152, 219, 0.07) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .background-animation {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    
+    .floating-shape {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      animation: float 20s infinite ease-in-out;
+      mix-blend-mode: screen;
+      
+      &.shape-1 {
+        width: 500px;
+        height: 500px;
+        top: -200px;
+        left: -200px;
+        background: radial-gradient(circle, rgba(52, 152, 219, 0.2) 0%, rgba(52, 152, 219, 0.05) 50%, transparent 70%);
+        animation-delay: 0s;
+      }
+      
+      &.shape-2 {
+        width: 400px;
+        height: 400px;
+        bottom: -150px;
+        right: -150px;
+        background: radial-gradient(circle, rgba(155, 89, 182, 0.15) 0%, rgba(155, 89, 182, 0.03) 50%, transparent 70%);
+        animation-delay: -5s;
+        animation-duration: 25s;
+      }
+    }
+    
+    .pulse-dot {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: radial-gradient(circle, #3498db 30%, rgba(52, 152, 219, 0.4) 70%, transparent 100%);
+      border-radius: 50%;
+      top: 30%;
+      left: 60%;
+      animation: pulseGlow 4s infinite ease-in-out;
+      box-shadow: 
+        0 0 40px 15px rgba(52, 152, 219, 0.3),
+        0 0 80px 30px rgba(52, 152, 219, 0.1);
+    }
+  }
+
+  .welcome-container {
+    position: relative;
+    z-index: 2;
+    max-width: 900px;
+    width: 90%;
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3.5rem; // Увеличил общий gap
+    text-align: center;
+  }
+
+  .content-section {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 1s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;
+    width: 100%;
+    
+    &.animate {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .tagline {
+      font-size: 3rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 3rem; // Увеличил отступ снизу
+      position: relative;
+      
+      .welcome-text {
+        display: block;
+        color: rgba(255, 255, 255, 0.95);
+        font-weight: 700;
+        font-size: 2.8rem;
+        margin-bottom: 1.2rem; // Увеличил отступ между строками
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        opacity: 0;
+        animation: wordAppear 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 0.5s;
+        letter-spacing: 0.5px;
+      }
+      
+      .quest-title {
+        display: inline-block;
+        margin-top: 0; // Убрал дополнительный отступ
+        
+        .quest-text {
+          background: linear-gradient(135deg, 
+            #3498db 0%, 
+            #9b59b6 25%, 
+            #e74c3c 50%, 
+            #f1c40f 75%, 
+            #2ecc71 100%);
+          background-size: 300% 300%;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          text-fill-color: transparent;
+          font-weight: 900;
+          font-size: 1.8rem; // Немного увеличил
+          letter-spacing: -0.3px;
+          position: relative;
+          display: inline-block;
+          padding: 0.5rem 1.5rem;
+          opacity: 0;
+          animation: 
+            wordAppear 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 0.8s,
+            gradientFlow 6s ease-in-out infinite 1.8s;
+          line-height: 1.1;
+          
+          &::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, 
+              rgba(52, 152, 219, 0.3), 
+              rgba(155, 89, 182, 0.3), 
+              rgba(231, 76, 60, 0.3), 
+              rgba(241, 196, 15, 0.3), 
+              rgba(46, 204, 113, 0.3));
+            filter: blur(15px);
+            transform: translateY(35px);
+            z-index: -1;
+            opacity: 0;
+            animation: 
+              fadeIn 0.8s forwards 1.8s,
+              shadowGlow 4s ease-in-out infinite 2.5s;
+          }
+        }
+      }
+    }
+    
+    .features {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      margin-top: 2.5rem; // Уменьшил отступ сверху
+      
+      .feature {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        opacity: 0;
+        transform: translateY(20px);
+        padding: 1.2rem 2rem;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+        
+        &:hover {
+          transform: translateY(-5px);
+          border-color: rgba(52, 152, 219, 0.3);
+          box-shadow: 
+            0 10px 30px rgba(52, 152, 219, 0.2),
+            0 0 0 1px rgba(52, 152, 219, 0.1);
+          
+          .feature-icon {
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+          }
+        }
+        
+        &:nth-child(1) {
+          animation: featureAppear 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 1.2s;
+        }
+        
+        &:nth-child(2) {
+          animation: featureAppear 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 1.4s;
+        }
+        
+        .feature-icon {
+          font-size: 2.2rem;
+          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .feature-text {
+          font-size: 1.2rem;
+          font-weight: 500;
+          color: rgba(255, 255, 255, 0.9);
+        }
+      }
+    }
+  }
+
+  .action-section {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 1s cubic-bezier(0.16, 1, 0.3, 1) 0.8s;
+    margin-top: 1rem; // Добавил небольшой отступ сверху
+    
+    &.animate {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .cta-button {
+      background: linear-gradient(135deg, #3498db 0%, #2980b9 50%, #1f639a 100%);
+      color: white;
+      border: none;
+      padding: 1.5rem 4rem;
+      font-size: 1.4rem;
+      font-weight: 600;
+      border-radius: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 
+        0 15px 35px rgba(52, 152, 219, 0.4),
+        0 5px 15px rgba(0, 0, 0, 0.3);
+      
+      &:hover {
+        transform: translateY(-8px);
+        box-shadow: 
+          0 25px 50px rgba(52, 152, 219, 0.5),
+          0 15px 25px rgba(0, 0, 0, 0.4);
+        background: linear-gradient(135deg, #4aa3df 0%, #3a8cc9 50%, #2a74b3 100%);
+        
+        .button-arrow {
+          transform: translateX(15px);
+        }
+      }
+      
+      &:active {
+        transform: translateY(-4px);
+        transition: all 0.1s ease;
+      }
+      
+      .button-text {
+        position: relative;
+        z-index: 1;
+        letter-spacing: 0.5px;
+      }
+      
+      .button-arrow {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+    }
+    
+    .hint {
+      margin-top: 0.8rem; // Добавил отступ сверху
+      
+      .hint-text {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.6);
+        letter-spacing: 1px;
+        opacity: 0;
+        animation: fadeIn 0.8s forwards 2s;
+      }
+    }
+  }
+
+  .decorative-elements {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    
+    .event-icon {
+      position: absolute;
+      font-size: 3.5rem;
+      opacity: 0.15;
+      animation: floatIcon 25s infinite linear;
+      
+      &.icon-1 {
+        top: 15%;
+        left: 10%;
+        animation-delay: 0s;
+      }
+      
+      &.icon-2 {
+        top: 25%;
+        right: 15%;
+        animation-delay: -7s;
+      }
+      
+      &.icon-3 {
+        bottom: 20%;
+        left: 20%;
+        animation-delay: -14s;
+      }
+    }
+  }
+
+  .gradient-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 30% 30%, rgba(52, 152, 219, 0.08) 0%, transparent 60%),
+      radial-gradient(circle at 70% 70%, rgba(155, 89, 182, 0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+}
+
+// Анимации
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  33% {
+    transform: translate(50px, -30px) rotate(120deg);
+  }
+  66% {
+    transform: translate(-30px, 40px) rotate(240deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+}
+
+@keyframes gradientFlow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes wordAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes featureAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shadowGlow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: translateY(35px) scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateY(35px) scale(1.05);
+  }
+}
+
+@keyframes floatIcon {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(30px, -30px) rotate(90deg);
+  }
+  50% {
+    transform: translate(0, -60px) rotate(180deg);
+  }
+  75% {
+    transform: translate(-30px, -30px) rotate(270deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(360deg);
+  }
+}
+
+// Адаптивность
+@media (max-width: 768px) {
+  .welcome-container {
+    padding: 2.5rem 2rem;
+    gap: 2.5rem;
+  }
+  
+  .content-section .tagline {
+    font-size: 2.5rem;
+    
+    .welcome-text {
+      font-size: 2.2rem;
+      margin-bottom: 1rem; // Меньший отступ на мобильных
+      line-height: 1.3;
+    }
+    
+    .quest-title .quest-text {
+      font-size: 2.8rem;
+      padding: 0.4rem 1.2rem;
+      line-height: 1.1;
+    }
+  }
+  
+  .features {
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  
+  .cta-button {
+    padding: 1.2rem 3rem;
+    font-size: 1.2rem;
+  }
+  
+  .action-section {
+    margin-top: 0.5rem;
+  }
+  
+  .event-icon {
+    font-size: 2.5rem;
+  }
+}
+
+// Улучшение читаемости текста
+.welcome-text,
+.quest-text,
+.feature-text,
+.button-text,
+.hint-text {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-smooth: always;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+// Отключаем backdrop-filter на мобильных устройствах для лучшей производительности
+@media (max-width: 768px) {
+  .feature {
+    backdrop-filter: none !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+  }
+}
