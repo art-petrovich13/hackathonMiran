@@ -15,7 +15,7 @@ const WelcomePage: React.FC = () => {
   }, []);
 
   const handleNavigate = () => {
-    navigate('/authorization');
+    navigate('/map');
   };
 
   return (
