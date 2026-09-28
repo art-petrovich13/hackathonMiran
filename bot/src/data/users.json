@@ -1,0 +1,208 @@
+[
+  {
+    "telegramId": 1024422309,
+    "firstName": "Artem",
+    "fio": "Петрович Артем Сергеевич",
+    "role": "inspector"
+  },
+  {
+    "telegramId": 1024252830,
+    "firstName": "Орешек💖",
+    "fio": "Капкович Арина Андреевна",
+    "role": "manager",
+    "currentStep": "awaiting_employee_selection",
+    "tempData": {
+      "employees": [
+        {
+          "telegramId": 1024422309,
+          "firstName": "Artem",
+          "fio": "Петрович Артем Сергеевич",
+          "role": "inspector"
+        },
+        {
+          "telegramId": 0,
+          "firstName": "",
+          "fio": "Петров Алекс Иванович",
+          "role": "inspector"
+        },
+        {
+          "telegramId": 1,
+          "firstName": "",
+          "fio": "Иванова Мария Игоревна",
+          "role": "inspector"
+        },
+        {
+          "telegramId": 2,
+          "firstName": "",
+          "fio": "Краснова Ирина Анатольевна",
+          "role": "inspector"
+        },
+        {
+          "telegramId": 3,
+          "firstName": "",
+          "fio": "Белый Максим Сергеевич",
+          "role": "inspector"
+        },
+        {
+          "telegramId": 6,
+          "firstName": "",
+          "fio": "Черный Егор Сергеевич",
+          "role": "inspector"
+        },
+        {
+          "telegramId": 7,
+          "firstName": "",
+          "fio": "Белова Екатерина Сергеевна",
+          "role": "inspector"
+        },
+        {
+          "telegramId": 1024252830,
+          "firstName": "Орешек💖",
+          "fio": "Капкович Арина Андреевна",
+          "role": "manager",
+          "currentStep": "awaiting_employee_action",
+          "tempData": {
+            "selectedEmployee": {
+              "telegramId": 1024422309,
+              "firstName": "Artem",
+              "fio": "Петрович Артем Сергеевич",
+              "role": "inspector"
+            },
+            "proposedTime": "12:00"
+          }
+        },
+        {
+          "telegramId": 1258151845,
+          "firstName": "weedkiller",
+          "fio": "Галат Ксения Дмитриевна",
+          "role": "supervisor",
+          "workshop": 1,
+          "currentStep": "awaiting_breakdown_photos",
+          "tempData": {
+            "photos": []
+          }
+        },
+        {
+          "telegramId": 10,
+          "firstName": "",
+          "fio": "Иванов Петр Александрович",
+          "role": "supervisor",
+          "workshop": 1
+        },
+        {
+          "telegramId": 11,
+          "firstName": "",
+          "fio": "Сидорова Анна Викторовна",
+          "role": "supervisor",
+          "workshop": 2
+        },
+        {
+          "telegramId": 12,
+          "firstName": "",
+          "fio": "Кузнецов Дмитрий Сергеевич",
+          "role": "supervisor",
+          "workshop": 3
+        },
+        {
+          "telegramId": 13,
+          "firstName": "",
+          "fio": "Морозова Елена Игоревна",
+          "role": "supervisor",
+          "workshop": 1
+        }
+      ]
+    }
+  },
+  {
+    "telegramId": 1258151845,
+    "firstName": "weedkiller",
+    "fio": "Галат Ксения Дмитриевна",
+    "role": "supervisor",
+    "workshop": 1,
+    "currentStep": "awaiting_breakdown_photos",
+    "tempData": {
+      "photos": []
+    }
+  },
+  {
+    "telegramId": 6526202588,
+    "firstName": "Natasha",
+    "currentStep": "awaiting_fio"
+  },
+  {
+    "telegramId": 0,
+    "firstName": "",
+    "fio": "Петров Алекс Иванович",
+    "role": "inspector"
+  },
+  {
+    "telegramId": 1,
+    "firstName": "",
+    "fio": "Иванова Мария Игоревна",
+    "role": "inspector"
+  },
+  {
+    "telegramId": 2,
+    "firstName": "",
+    "fio": "Краснова Ирина Анатольевна",
+    "role": "inspector"
+  },
+  {
+    "telegramId": 3,
+    "firstName": "",
+    "fio": "Белый Максим Сергеевич",
+    "role": "inspector"
+  },
+  {
+    "telegramId": 6,
+    "firstName": "",
+    "fio": "Черный Егор Сергеевич",
+    "role": "inspector"
+  },
+  {
+    "telegramId": 7,
+    "firstName": "",
+    "fio": "Белова Екатерина Сергеевна",
+    "role": "inspector"
+  },
+  {
+    "telegramId": 10,
+    "firstName": "",
+    "fio": "Иванов Петр Александрович",
+    "role": "supervisor",
+    "workshop": 1
+  },
+  {
+    "telegramId": 11,
+    "firstName": "",
+    "fio": "Сидорова Анна Викторовна",
+    "role": "supervisor",
+    "workshop": 2
+  },
+  {
+    "telegramId": 12,
+    "firstName": "",
+    "fio": "Кузнецов Дмитрий Сергеевич",
+    "role": "supervisor",
+    "workshop": 3
+  },
+  {
+    "telegramId": 13,
+    "firstName": "",
+    "fio": "Морозова Елена Игоревна",
+    "role": "supervisor",
+    "workshop": 1
+  },
+  {
+    "telegramId": 14,
+    "firstName": "",
+    "fio": "Волков Олег Михайлович",
+    "workshop": 5
+  },
+  {
+    "telegramId": 619064537,
+    "firstName": "yahor",
+    "fio": "иванов иван",
+    "role": "inspector"
+  }
+]
